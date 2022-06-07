@@ -4,9 +4,9 @@
 This is a cluster analysis of 29 shape feature parameters derived from 1396 binary reference images, processed with the R package `SAFARI`.
 
 ## Contents
-* `gif\binary` - Image dataset
-* `gif\non_binary` - Images considered non-binary and not factored into the analysis
-* `cluster_analysis` - R script that executes the cluster analysis.
+* `gif/binary/` - Image dataset
+* `gif/non_binary/` - Images considered non-binary and not factored into the analysis
+* `cluster_analysis.R` - R script that executes the cluster analysis.
 
 ## Dependencies
 * `BiocManager` - `SAFARI` dependency
