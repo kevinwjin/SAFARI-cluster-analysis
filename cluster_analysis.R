@@ -48,13 +48,16 @@ BiocManager::install("EBImage") # For using SAFARI
 install.packages("remotes") # For installing SAFARI
 install_github("estfernandez/SAFARI") # SAFARI 0.1.1; newer than CRAN
 install.packages("tidyverse") # dplyr and ggplot2
+install.packages("mclust") # Hierarchical clustering and Gaussian mixture models
 install.packages("factoextra") # Visualization of clusters
 #install.packages("animation") # Visualization of clusters
 
 # Load packages
-library(SAFARI)
-library(dplyr)
-library(factoextra) # Cluster visualization
+library(SAFARI) # Image processing
+library(dplyr) # Data handling
+library(ggplot2) # Beautiful plots
+library(mclust) # Hierarchical clustering and Gaussian mixture models
+library(factoextra) # Visualization of clusters
 
 # Load images to be processed
 # setwd("C:/Users/kevin/Downloads/project/gif/_batch_test/") # Set working directory (doesn't work in Rmd)
