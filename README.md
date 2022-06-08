@@ -1,7 +1,7 @@
-# Cluster analysis of 1396 reference images processed with SAFARI
+# Cluster analysis of 1400 reference images processed with SAFARI
 
 ## Description
-This is a cluster analysis of 29 shape feature parameters derived from 1396 binary reference images, processed with the R package `SAFARI`.
+This is a cluster analysis of 29 shape feature parameters derived from 1400 binary reference images, processed with the R package `SAFARI`.
 
 ## Contents
 * `gif/binary/` - Image dataset

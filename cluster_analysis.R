@@ -1,8 +1,10 @@
-## Cluster analysis of 1396 images processed with SAFARI 
-#
+## Title: Cluster analysis of 1400 images processed with SAFARI 
+## Author: Kevin Jin
+##
 ## To-do:
 ## 1. For non-binary images, change all non-zero values to 1 even if there are 
-## multiple non-zero values (0 is background (black); 1 is shape (white))
+## multiple non-zero values (0 is background (black); 1 is shape (white)). This 
+## should bring the number of possible images back to 1400.
 ##
 ## 2. Pass invert = TRUE for Glas-12.gif during read.image
 ##
@@ -161,4 +163,4 @@ fviz_cluster(pc_cluster, # No labels
 
 fviz_cluster(pc_cluster, # Labels included
              data = params[1:40,],
-             main = "Cluster analysis of SAFARI output of 1400 images (k = 2)")
+             main = "Cluster analysis of SAFARI output of 1400 images (k = 7)")
