@@ -1,10 +1,10 @@
 # Cluster analysis of 1400 reference images processed with SAFARI
 
 ## Description
-This is a cluster analysis of 29 shape feature parameters derived from 1400 binary reference images, processed with the R package `SAFARI`. There are 70 shapes represented by 20 images each, with minor differences in between. The goal of this project is to evaluate different clustering methods of image shape features and devise a novel model-based clustering method.
+This is a cluster analysis of 29 shape feature parameters derived from 1400 binary images of reference shapes, processed with the R package `SAFARI`. There are 70 shapes represented by 20 images each, with minor differences in between. The goal of this project is to evaluate different clustering methods of image shape features and devise a novel model-based clustering method.
 
 ## Contents
-* `gif/binary/` - Image dataset
+* `gif/binary/` - 1400 binary images of reference shapes
 * `gif/non_binary/` - Images considered non-binary and not factored into the analysis
 * `cluster_analysis.R` - R script that executes the cluster analysis.
 
