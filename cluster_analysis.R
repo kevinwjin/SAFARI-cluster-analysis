@@ -2,46 +2,45 @@
 ## Author: Kevin Jin
 ##
 ## To-do:
-## 1. For non-binary images, change all non-zero values to 1 even if there are 
+## 1. First, ensure that the data is clean. Check case by case to make sure 
+## that the images are properly loaded, with 0s for background and 1s for the 
+## shape, and invert as necessary. See 1 and 2.
+##
+## 2. For non-binary images, change all non-zero values to 1 even if there are 
 ## multiple non-zero values (0 is background (black); 1 is shape (white)). This 
 ## should bring the number of possible images back to 1400.
 ##
-## 2. Pass invert = TRUE for Glas-12.gif during read.image
+## 3. Pass invert = TRUE for Glas-12.gif during read.image.
 ##
-## 3. For binary.segmentation, use filter = 150 (noise removal of anything 
+## 4. For binary.segmentation, use filter = 150 (noise removal of anything 
 ## smaller than 150 pixels; be careful because largest shape may be smaller
 ## than 150 for some images - always choose the largest filter per image) and 
 ## k = 3 (enlarge shape by a factor of 3 to avoid 0 thickness and revisiting 
 ## the same pixel when tracing boundary)
 ##
-## 4. Remove non-binary images from analysis
-##
-## 5. True number of clusters can be extracted by substringing the first five 
-## letters of each file name (around 70 for 1400). 
-##
-## 6. Next step: Evaluating the unsupervised learning algorithms. In
+## 5. Next. evaluate three different clustering algorithms (k-means clustering, 
+## hierarchical clustering, and Gaussian mixture model clustering). In
 ## supervised learning, we use a contingency table to evaluate algorithm
 ## sensitivity. In unsupervised learning, we use the Rand index. Here, we will
-## use the Adjusted Rand index to evaluate the k-means clustering, and push
-## for a higher ARI than k-means clustering, hierarchical clustering, and 
-## Gaussian mixture model clustering.
+## use the adjusted Rand index to evaluate the three clustering methods, and 
+## eventually push for a higher ARI than all three.
 ##
-## 7. First, we ensure that the data is clean. Check case by case to make sure 
-## that the images are properly loaded, with 0s for background and 1s for the 
-## shape, and invert as necessary. See 1 and 2.
+## 6. The true number of clusters can be extracted by substringing the first 
+## five letters of each file name (~70 clusters for 1400 images with 20 images
+## in each cluster). 
 ##
-## 8. Next, find a package to calculate the ARI. Install packages also for 
+## 7. Find a package to calculate the ARI. Install packages also for 
 ## hierarchical clustering, and Gaussian mixture model clustering.
 ##
-## 9. Based on shape features, run k-means clustering from 2:100 k-values. To
-## conserve computational resources, it is possible to choose a subset of the 
-## image set, ensuring you have as different images as possible (~300 images, 
-## representing 10 different objects). Then, run hierarchical clustering, and 
-## Gaussian mixture model clustering.
+## 8. Based on shape features, run k-means for k-values from 2-100. To
+## conserve computational resources, you may choose a subset of the 
+## image set, ensuring you have as different images as possible (e.g. ~300 
+## images, representing 10 different objects). Then, run hierarchical
+## and Gaussian mixture model clustering.
 ## 
-## 10. Create a plot with k-value on the x-axis, and ARI on the y-axis. On this 
+## 9. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
 ## plot, generate curves of scaled and unscaled data (unscaled would probably 
-## give low ARI) for each clustering method. This is 6 curves in total on the
+## give low ARI) for each clustering method. This makes 6 curves in total on the
 ## same plot.
 
 ##### PREPARATION #####
