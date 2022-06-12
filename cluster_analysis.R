@@ -46,6 +46,7 @@ remotes::install_github("kevinwjin/SAFARI") # Forked from estfernandez with read
 install.packages("tidyverse") # dplyr and ggplot2
 install.packages("mclust") # Hierarchical clustering and Gaussian mixture models
 install.packages("factoextra") # Cluster analysis visualization
+install.packages("parallel") # Parallel computations in R
 
 # Include libraries
 library(SAFARI) # Image processing
