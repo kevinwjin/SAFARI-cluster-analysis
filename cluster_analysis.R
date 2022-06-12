@@ -47,12 +47,13 @@ install.packages("tidyverse") # dplyr and ggplot2
 install.packages("mclust") # Hierarchical clustering and Gaussian mixture models
 install.packages("factoextra") # Cluster analysis visualization
 
-# Load packages
+# Include libraries
 library(SAFARI) # Image processing
 library(dplyr) # Data handling
 library(ggplot2) # Beautiful plots
 library(mclust) # Hierarchical clustering and Gaussian mixture models
 library(factoextra) # Visualization of clusters
+library(parallel) # Parallel computations in R
 
 ##### LOAD IMAGES #####
 
@@ -81,17 +82,15 @@ extract_features <- function(img) {
                                                    "topological"))
     features <- data.frame(img_segs[["desc"]][-c(1,1:4)]) # Delete irrelevant first 4 columns
     features <- cbind(c(img), features) # Add first column with file name
-  
   return(features)
 }
 
-# Process all images
-features <- extract_features("apple-1.gif") # Read in first image
-for(file in file_list) { # Read in the rest of the images
-  features <- add_row(features, extract_features(file))
-}
-features <- features[-1, ] # Remove redundant first row (unnecessary?)
-features <- na.omit(features) # Remove any missing observations
+# Process all images in parallel
+cl <- makeCluster(8) # Allocate 8 cores
+clusterExport(cl, varlist = c("read.image", "binary.segmentation")) # Pass function dependencies to each core
+result <- parSapply(cl, file_list, FUN = extract_features) # Parallelized version of sapply
+stopCluster(cl) # De-allocate cores and expunge R from memory
+features <- t(result) # Transpose result function
 features <- data.frame(features, row.names = 1) # Change first column to row names
 
 ##### CLUSTER ANALYSIS #####
