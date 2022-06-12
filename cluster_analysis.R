@@ -39,12 +39,12 @@
 ## representing 10 different objects). Then, run hierarchical clustering, and 
 ## Gaussian mixture model clustering.
 ## 
-## 10. Cake a plot with k-value on the x-axis, and ARI on the y-axis. On this 
+## 10. Create a plot with k-value on the x-axis, and ARI on the y-axis. On this 
 ## plot, generate curves of scaled and unscaled data (unscaled would probably 
 ## give low ARI) for each clustering method. This is 6 curves in total on the
 ## same plot.
 
-### PREPARATION ###
+##### PREPARATION #####
 
 # Install dependencies
 install.packages("BiocManager") # SAFARI dependency
@@ -62,7 +62,7 @@ library(ggplot2) # Beautiful plots
 library(mclust) # Hierarchical clustering and Gaussian mixture models
 library(factoextra) # Visualization of clusters
 
-### LOAD IMAGES ###
+##### LOAD IMAGES #####
 
 # List images to be processed (set working directory beforehand)
 file.list <- dir(pattern = "gif$") # Retrieve list of all images
@@ -79,7 +79,7 @@ for (file in file_list) { # Remove non-binary images from list
   }
 }
 
-### PROCESS IMAGES AND EXTRACT FEATURES ###
+##### PROCESS IMAGES AND EXTRACT FEATURES #####
 
 # Segment shape and extract 29 features of segmented shape
 extract_features <- function(img) {
@@ -105,7 +105,7 @@ features <- features[-1, ] # Remove redundant first row (unnecessary?)
 features <- na.omit(features) # Remove any missing observations
 features <- data.frame(features, row.names = 1) # Change first column to row names
 
-### CLUSTER ANALYSIS ##
+##### CLUSTER ANALYSIS #####
 
 # k-means clustering
 rescaled_features <- features %>% mutate_all(scale) # Standardize all variables
@@ -148,4 +148,8 @@ fviz_cluster(pc_cluster, # Labels included
 
 # Gaussian mixture model clustering
 
-# Evaluation of clustering accuracy (adjusted Rand index)
+##### EVALUATE CLUSTERING ACCURACY #####
+
+# Calculate adjusted Rand index for each clustering method
+
+# Plot ARI and k-values for each clustering method
