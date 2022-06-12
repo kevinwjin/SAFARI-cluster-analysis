@@ -11,35 +11,27 @@
 ## multiple non-zero values (0 is background (black); 1 is shape (white)). This 
 ## should bring the number of possible images back to 1400.
 ##
-## 3. Pass invert = TRUE for Glas-12.gif during read.image.
-##
-## 4. For binary.segmentation, use filter = 150 (noise removal of anything 
-## smaller than 150 pixels; be careful because largest shape may be smaller
-## than 150 for some images - always choose the largest filter per image) and 
-## k = 3 (enlarge shape by a factor of 3 to avoid 0 thickness and revisiting 
-## the same pixel when tracing boundary)
-##
-## 5. Next. evaluate three different clustering algorithms (k-means clustering, 
+## 3. Next. evaluate three different clustering algorithms (k-means clustering, 
 ## hierarchical clustering, and Gaussian mixture model clustering). In
 ## supervised learning, we use a contingency table to evaluate algorithm
 ## sensitivity. In unsupervised learning, we use the Rand index. Here, we will
 ## use the adjusted Rand index to evaluate the three clustering methods, and 
 ## eventually push for a higher ARI than all three.
 ##
-## 6. The true number of clusters can be extracted by substringing the first 
+## 4. The true number of clusters can be extracted by substringing the first 
 ## five letters of each file name (~70 clusters for 1400 images with 20 images
 ## in each cluster). 
 ##
-## 7. Find a package to calculate the ARI. Install packages also for 
+## 5. Find a package to calculate the ARI. Install packages also for 
 ## hierarchical clustering, and Gaussian mixture model clustering.
 ##
-## 8. Based on shape features, run k-means for k-values from 2-100. To
+## 6. Based on shape features, run k-means for k-values from 2-100. To
 ## conserve computational resources, you may choose a subset of the 
 ## image set, ensuring you have as different images as possible (e.g. ~300 
 ## images, representing 10 different objects). Then, run hierarchical
 ## and Gaussian mixture model clustering.
 ## 
-## 9. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
+## 7. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
 ## plot, generate curves of scaled and unscaled data (unscaled would probably 
 ## give low ARI) for each clustering method. This makes 6 curves in total on the
 ## same plot.
@@ -69,22 +61,31 @@ file_list <- dir(pattern = "gif$")
 
 ##### PROCESS IMAGES AND EXTRACT FEATURES #####
 
-# Segment shape and extract 29 features of segmented shape
+# Segment shape from image and extract 29 features
 extract_features <- function(img) {
-  this_img <- read.image(img)
-  img_segs <- binary.segmentation(this_img,
-                                  id = c("NLST", "AA00474", "11030"),
-                                  filter = 150,
-                                  k = 3, 
-                                  categories = c("geometric", # get all features
-                                                 "boundary", 
-                                                 "topological"))
-  features <- data.frame(img_segs[["desc"]][-c(1,1:4)]) # delete first 4 columns
-  features <- cbind(c(img), features) # add first column with file name
+  if (img == "Glas-12.gif") { # Special cases of inverted images
+    this_img <- read.image(img, invert = TRUE)
+  } else {
+    this_img <- read.image(img)
+  }
+    img_segs <- binary.segmentation(this_img,
+                                    id = c("NLST", "AA00474", "11030"), # Placeholder IDs
+                                    filter = 150, # Noise removal of anything smaller than 150 pixels;
+                                                  # Be careful because largest shape may be smaller
+                                                  # than 150 for some images;
+                                                  # Always choose the largest filter per image
+                                    k = 3, # Enlarge shape by a factor of 3 to avoid 0 thickness and revisiting 
+                                           # the same pixel when tracing boundary
+                                    categories = c("geometric", # Extract all features
+                                                   "boundary", 
+                                                   "topological"))
+    features <- data.frame(img_segs[["desc"]][-c(1,1:4)]) # Delete irrelevant first 4 columns
+    features <- cbind(c(img), features) # Add first column with file name
+  
   return(features)
 }
 
-# Extract 29 features from images
+# Process all images
 features <- extract_features("apple-1.gif") # Read in first image
 for(file in file_list) { # Read in the rest of the images
   features <- add_row(features, extract_features(file))
@@ -138,6 +139,6 @@ fviz_cluster(pc_cluster, # Labels included
 
 ##### EVALUATE CLUSTERING ACCURACY #####
 
-# Calculate adjusted Rand index for each clustering method
+# Calculate adjusted Rand index for each clustering method (compare with true k = 20)
 
 # Plot ARI and k-values for each clustering method
