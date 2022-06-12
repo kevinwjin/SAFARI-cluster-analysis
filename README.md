@@ -4,8 +4,7 @@
 This is a cluster analysis of 29 shape feature parameters derived from 1400 binary images of reference shapes, processed with the R package `SAFARI`. There are 70 shapes represented by 20 images each, with minor differences in between. The goal of this project is to evaluate different clustering methods of image shape features and devise a novel model-based clustering method.
 
 ## Contents
-* `gif/binary/` - 1400 binary images of reference shapes
-* `gif/non_binary/` - Images considered non-binary and not factored into the analysis
+* `gif/` - 1400 binary images of reference shapes
 * `cluster_analysis.R` - R script that executes the cluster analysis.
 
 ## Dependencies
@@ -16,3 +15,4 @@ This is a cluster analysis of 29 shape feature parameters derived from 1400 bina
 * `tidyverse` - Data manipulation with `dplyr` and beautiful graphics with `ggplot2`
 * `mclust` - Hierarchical and Gaussian mixture model clustering
 * `factoextra` - Beautiful cluster visualizations
+* `parallel` - Parallel computation in R
