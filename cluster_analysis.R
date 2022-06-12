@@ -1,7 +1,8 @@
-## Title: Cluster analysis of 1400 images processed with SAFARI 
+## Cluster analysis of shapes extracted from 1400 images processed with SAFARI 
 ## Author: Kevin Jin
 ##
 ## To-do:
+##
 ## 1. First, ensure that the data is clean. Check case by case to make sure 
 ## that the images are properly loaded, with 0s for background and 1s for the 
 ## shape, and invert as necessary. See 1 and 2.
@@ -49,7 +50,7 @@
 install.packages("BiocManager") # SAFARI dependency
 BiocManager::install("EBImage") # SAFARI dependency
 install.packages("remotes") # For installing SAFARI
-install_github("estfernandez/SAFARI") # SAFARI 0.1.1; newer than CRAN
+remotes::install_github("kevinwjin/SAFARI") # Forked from estfernandez with read.image fix
 install.packages("tidyverse") # dplyr and ggplot2
 install.packages("mclust") # Hierarchical clustering and Gaussian mixture models
 install.packages("factoextra") # Cluster analysis visualization
@@ -63,26 +64,14 @@ library(factoextra) # Visualization of clusters
 
 ##### LOAD IMAGES #####
 
-# List images to be processed (set working directory beforehand)
-file.list <- dir(pattern = "gif$") # Retrieve list of all images
-
-is_binary <- function(img) 
-{
-  length(unique(c(img))) <= 2
-}
-
-for (file in file_list) { # Remove non-binary images from list
-  if (is_binary(caTools::read.gif(file)$image) == FALSE) {
-    print(file)
-    file_list <- file.list[names(file_list) != file]
-  }
-}
+# Retrieve list of all images (set working directory to image folder)
+file_list <- dir(pattern = "gif$") 
 
 ##### PROCESS IMAGES AND EXTRACT FEATURES #####
 
 # Segment shape and extract 29 features of segmented shape
 extract_features <- function(img) {
-  this_img <- read.image(img) 
+  this_img <- read.image(img)
   img_segs <- binary.segmentation(this_img,
                                   id = c("NLST", "AA00474", "11030"),
                                   filter = 150,
@@ -96,9 +85,9 @@ extract_features <- function(img) {
 }
 
 # Extract 29 features from images
-features <- extract.features("apple-1.gif") # Read in first image
+features <- extract_features("apple-1.gif") # Read in first image
 for(file in file_list) { # Read in the rest of the images
-  features <- add_row(features, extract.features(file))
+  features <- add_row(features, extract_features(file))
 }
 features <- features[-1, ] # Remove redundant first row (unnecessary?)
 features <- na.omit(features) # Remove any missing observations
