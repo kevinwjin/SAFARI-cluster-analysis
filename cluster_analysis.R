@@ -1,37 +1,33 @@
-## Cluster analysis of shapes extracted from 1400 images processed with SAFARI 
+## Cluster analysis of shapes extracted from 1400 images processed with SAFARI
 ## Author: Kevin Jin
 ##
 ## To-do:
 ##
-## 1. First, ensure that the data is clean. Check case by case to make sure 
-## that the images are properly loaded, with 0s for background and 1s for the 
+## 1. First, ensure that the data is clean. Check case by case to make sure
+## that the images are properly loaded, with 0s for background and 1s for the
 ## shape, and invert as necessary. See 1 and 2.
 ##
-## 2. For non-binary images, change all non-zero values to 1 even if there are 
-## multiple non-zero values (0 is background (black); 1 is shape (white)). This 
-## should bring the number of possible images back to 1400.
-##
-## 3. Next. evaluate three different clustering algorithms (k-means clustering, 
+## 2. Next. evaluate three different clustering algorithms (k-means clustering,
 ## hierarchical clustering, and Gaussian mixture model clustering). In
 ## supervised learning, we use a contingency table to evaluate algorithm
 ## sensitivity. In unsupervised learning, we use the Rand index. Here, we will
-## use the adjusted Rand index to evaluate the three clustering methods, and 
+## use the adjusted Rand index to evaluate the three clustering methods, and
 ## eventually push for a higher ARI than all three.
 ##
-## 4. The true number of clusters can be extracted by substringing the first 
+## 3. The true number of clusters can be extracted by substringing the first
 ## five letters of each file name (~70 clusters for 1400 images with 20 images
-## in each cluster). 
+## in each cluster).
 ##
-## 5. Find a package to calculate the ARI. Install packages also for 
+## 4. Find a package to calculate the ARI. Install packages also for
 ## hierarchical clustering, and Gaussian mixture model clustering.
 ##
-## 6. Based on shape features, run k-means for k-values from 2-100. To
-## conserve computational resources, you may choose a subset of the 
-## image set, ensuring you have as different images as possible (e.g. ~300 
+## 5. Based on shape features, run k-means for k-values from 2-100. To
+## conserve computational resources, you may choose a subset of the
+## image set, ensuring you have as different images as possible (e.g. ~300
 ## images, representing 10 different objects). Then, run hierarchical
 ## and Gaussian mixture model clustering.
-## 
-## 7. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
+##
+## 6. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
 ## plot, generate curves of scaled and unscaled data (unscaled would probably 
 ## give low ARI) for each clustering method. This makes 6 curves in total on the
 ## same plot.
@@ -59,7 +55,7 @@ library(parallel) # Parallel computations in R
 ##### LOAD IMAGES #####
 
 # Retrieve list of all images (set working directory to image folder)
-file_list <- dir(pattern = "gif$") 
+file_list <- dir(pattern = "gif$")
 
 ##### PROCESS IMAGES AND EXTRACT FEATURES #####
 
@@ -87,7 +83,7 @@ extract_features <- function(img) {
 }
 
 # Process all images in parallel
-cl <- makeCluster(8) # Allocate 8 cores
+cl <- makeCluster(8) # Allocate 8 cores; modify as appropriate for system
 clusterExport(cl, varlist = c("read.image", "binary.segmentation")) # Pass function dependencies to each core
 result <- parSapply(cl, file_list, FUN = extract_features) # Parallelized version of sapply
 stopCluster(cl) # De-allocate cores and expunge R from memory
@@ -100,12 +96,12 @@ features <- data.frame(features, row.names = 1) # Change first column to row nam
 rescaled_features <- features %>% mutate_all(scale) # Standardize all variables
 
 # Optimizing k (elbow method)
-kmean_withinss <- function(k) { 
+kmean_withinss <- function(k) {
   cluster <- kmeans(rescaled_features[1:40, ], k) # Only try first 40 images
   return(cluster$tot.withinss)
 }
 
-max_k <- 20 # Set maximum clusters 
+max_k <- 20 # Set maximum clusters
 wss <- sapply(2:max_k, kmean_withinss) # Run k-means over all k-values
 elbow <- data.frame(2:max_k, wss) # Create a data frame to plot elbow graph
 
@@ -119,18 +115,18 @@ ggplot(elbow, aes(x = X2.max_k, y = wss)) +
   scale_x_continuous(breaks = seq(1, 20, by = 1))
 
 # Train the k-means model with optimal k
-pc_cluster <- kmeans(rescaled_features[1:40,], 7) # True k is 2 for 40 images
+pc_cluster <- kmeans(rescaled_features[1:40, ], 7) # True k is 2 for 40 images
 
 # Visualize clusters
 fviz_cluster(pc_cluster, # No labels
              data = rescaled_features,
              geom = "point",
-             ellipse.type = "convex", 
+             ellipse.type = "convex",
              ggtheme = theme_bw(),
              main = "Cluster analysis of SAFARI output of 1400 images (k = 7)")
 
 fviz_cluster(pc_cluster, # Labels included
-             data = features[1:40,],
+             data = features[1:40, ],
              main = "Cluster analysis of SAFARI output of 1400 images (k = 7)")
 
 # Hierarchical clustering
