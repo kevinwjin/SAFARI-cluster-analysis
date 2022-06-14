@@ -133,9 +133,18 @@ fviz_cluster(kmeans_cluster, # Labels included
              main = "k-means clustering of shape features from 1400 images (k = 7)")
 
 # Hierarchical clustering
-d <- dist(rescaled_features, method = "euclidean") # Dissimilarity matrix
-hc1 <- hclust(d, method = "complete") # Complete linkage hierarchical clustering
-plot(hcl, cex = 0.6, hang = -1) # Plot dendrogram
+hier_scaled <- hclust(dist(rescaled_features, method = "euclidean"), # Dissimilarity matrix
+                      method = "ward.D2") # Complete linkage hierarchical clustering
+
+hier_unscaled <- hclust(dist(features, method = "euclidean"),
+                        method = "ward.D2")
+
+plot(hier_scaled, cex = 0.1, hang = -0.01) # Plot dendrogram
+fit <- cutree(hier_scaled, k = 70)
+table(fit)
+
+plot(hier_scaled, cex = 0.1, hang = -0.01)
+rect.hclust(hier_scaled, k = 70, border = "red")
 
 hc2 <- agnes(rescaled_features, method = "complete") # Agnes function
 hc2$ac # Agglomerative coefficient
@@ -221,9 +230,68 @@ ggplot(kmeans_ARI, aes(x = k_values)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 # Generate hierarchical clusters
-hier_scaled <- dist(rescaled_features, method = "euclidean") # Dissimilarity matrix
-hc1 <- hclust(d, method = "complete") # Complete linkage hierarchical clustering
-plot(hcl, cex = 0.6, hang = -1) # Plot dendrogram
+hier_scaled_tree <- hclust(dist(rescaled_features, method = "euclidean"), # Dissimilarity matrix
+                      method = "complete") # Complete linkage hierarchical clustering
+
+hier_unscaled_tree <- hclust(dist(features, method = "euclidean"),
+                        method = "complete")
+
+max_k <- 100
+temp <- hclust(dist(rescaled_features, method = "euclidean"),
+               method = "complete")[["labels"]]
+hier_mat <- matrix(nrow = 100, ncol = 1400, byrow = TRUE)
+
+# Generate hierarchical clustering from scaled features
+for (k in 1:max_k) {
+  hier_mat[k, ] <- cutree(hier_scaled_tree, k = k)
+}
+hier_scaled <- as.data.frame(hier_mat)
+names(hier_scaled) <- temp
+
+# Generate hierarchical clustering from unscaled features
+for (k in 1:max_k) {
+  hier_mat[k, ] <- cutree(hier_unscaled_tree, k = k)
+}
+hier_unscaled <- as.data.frame(hier_mat)
+names(hier_unscaled) <- temp
+
+# Calculate ARI values for hierarchical clustering over k = 1:100 (Ground truth: k = 70)
+hier_scaled_truth <- cutree(hier_scaled_tree, k = 70) # Scaled truth
+hier_unscaled_truth <- cutree(hier_unscaled_tree, k = 70) # Unscaled truth
+
+hier_ARI <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
+for (i in 1:max_k) {
+  # ARI for hierarchical clustering of scaled features
+  hier_ARI[i, 1] <- adjustedRandIndex(unlist(hier_scaled[i, ]), 
+                                      hier_scaled_truth)
+  # ARI for hierarchical clustering of unscaled features
+  hier_ARI[i, 2] <- adjustedRandIndex(unlist(hier_unscaled[i, ]), 
+                                      hier_unscaled_truth)
+}
+hier_ARI <- as.data.frame(hier_ARI)
+names(hier_ARI) <- c("ARI_scaled", "ARI_unscaled")
+k_values <- 1:max_k
+hier_ARI <- mutate(hier_ARI, k_values = as.numeric(row.names(hier_ARI)))
+
+# Visualize GMM clustering accuracy
+ggplot(hier_ARI, aes(x = k_values)) + 
+  geom_point(aes(y = ARI_scaled, 
+                 color = "darkred")) + 
+  geom_line(aes(y = ARI_scaled, 
+                color = "darkred")) + 
+  geom_point(aes(y = ARI_unscaled, 
+                 color = "steelblue")) + 
+  geom_line(aes(y = ARI_unscaled, 
+                color = "steelblue")) + 
+  geom_vline(xintercept = 70, 
+             color = "red") +
+  labs(title = "Hierarchical clustering accuracy (ground truth: k = 70)",
+       x = "k-value",
+       y = "Adjusted Rand Index",
+       color = "Features") +
+  scale_color_hue(labels = c("Scaled", "Unscaled")) +
+  scale_x_continuous(breaks = seq(0, 100, by = 10)) + 
+  scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 # Generate Gaussian mixture model clusters
 max_k <- 100
@@ -284,12 +352,15 @@ ggplot(gmm_ARI, aes(x = k_values)) +
 
 # Visualize accuracy of all clustering methods
 accuracy <- right_join(kmeans_ARI, gmm_ARI, by = "k_values")
+accuracy <- right_join(accuracy, hier_ARI, by = "k_values")
 
 names(accuracy) <- c("kmeans_ARI_scaled", 
                      "kmeans_ARI_unscaled", 
                      "k_values",
                      "gmm_ARI_scaled",
-                     "gmm_ARI_unscaled")
+                     "gmm_ARI_unscaled",
+                     "hier_ARI_scaled",
+                     "hier_ARI_unscaled")
 
 ggplot(accuracy, aes(x = k_values)) +
   #geom_point(aes(y = kmeans_ARI_scaled,
@@ -302,11 +373,12 @@ ggplot(accuracy, aes(x = k_values)) +
   geom_line(aes(y = kmeans_ARI_unscaled,
                 color = "darkred",
                 linetype = "twodash")) +
-  #geom_line(aes(y = ARI_hierarchical_scaled), 
-  #          color = "steelblue") +
-  #geom_line(aes(y = ARI_hierarchical_unscaled), 
-  #          color = "steelblue", 
-  #          linetype = "twodash") +
+  geom_line(aes(y = hier_ARI_scaled,
+                color = "steelblue",
+                linetype = "solid")) +
+  geom_line(aes(y = hier_ARI_unscaled,
+                color = "steelblue", 
+                linetype = "twodash")) +
   #geom_point(aes(y = gmm_ARI_scaled,
   #                color = "seagreen")) +
   geom_line(aes(y = gmm_ARI_scaled,
@@ -324,5 +396,5 @@ ggplot(accuracy, aes(x = k_values)) +
        y = "Adjusted Rand Index") +
   scale_x_continuous(breaks = seq(0, 100, by = 10)) + 
   scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
-  scale_color_hue(labels = c("k-means", "GMM")) +
+  scale_color_hue(labels = c("k-means", "Hierarchical", "GMM")) +
   scale_linetype(labels = c("Scaled", "Unscaled"))
