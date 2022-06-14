@@ -7,29 +7,43 @@
 ## that the images are properly loaded, with 0s for background and 1s for the
 ## shape, and invert as necessary. See 1 and 2.
 ##
-## 2. Next. evaluate three different clustering algorithms (k-means clustering,
+## 2. In the SAFARI fork, set objects for 0 = background and 1 = foreground for
+## each image.
+##
+## 3. Next. evaluate three different clustering algorithms (k-means clustering,
 ## hierarchical clustering, and Gaussian mixture model clustering). In
 ## supervised learning, we use a contingency table to evaluate algorithm
 ## sensitivity. In unsupervised learning, we use the Rand index. Here, we will
 ## use the adjusted Rand index to evaluate the three clustering methods, and
 ## eventually push for a higher ARI than all three.
 ##
-## 3. The true number of clusters can be extracted by substringing the first
+## 4. The true number of clusters can be extracted by substringing the first
 ## five letters of each file name (~70 clusters for 1400 images with 20 images
 ## in each cluster).
 ##
-## 4. Based on shape features, run k-means for k-values from 2-100. To
+## 5. Based on shape features, run k-means for k-values from 2-100. To
 ## conserve computational resources, you may choose a subset of the
 ## image set, ensuring you have as different images as possible (e.g. ~300
 ## images, representing 10 different objects). Then, run hierarchical
 ## and Gaussian mixture model clustering.
 ##
-## 5. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
+## 6. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
 ## plot, generate curves of scaled and unscaled data (unscaled would probably 
 ## give low ARI) for each clustering method. This makes 6 curves in total on the
 ## same plot.
 ##
-## 6. Clean up code and increase readability and efficiency.
+## 7. Clean up code and increase readability and efficiency.
+##
+## 8. Create 10 slides introducing 3 clustering methods to high school students. 
+## (Deadline: 2 weeks)
+##
+## 9. Find more benchmark datasets to demonstrate that GMM performs the best; 
+## you want shape image sets. Look for famous papers about image shape clustering.
+##
+## 10. Implement BayesLASA. Fix k (number of landmark points) and manually judge
+## if the algorithm can capture the image adequately for all 1400 images.
+##
+## 11. Try to get "distance vector" for 1 image.
 
 ##### PREPARATION #####
 
@@ -363,13 +377,9 @@ names(accuracy) <- c("kmeans_ARI_scaled",
                      "hier_ARI_unscaled")
 
 ggplot(accuracy, aes(x = k_values)) +
-  #geom_point(aes(y = kmeans_ARI_scaled,
-  #              color = "darkred")) +
   geom_line(aes(y = kmeans_ARI_scaled,
                 color = "darkred",
                 linetype = "solid")) +
-  #geom_point(aes(y = kmeans_ARI_unscaled,
-  #              color = "darkred")) +
   geom_line(aes(y = kmeans_ARI_unscaled,
                 color = "darkred",
                 linetype = "twodash")) +
@@ -379,13 +389,9 @@ ggplot(accuracy, aes(x = k_values)) +
   geom_line(aes(y = hier_ARI_unscaled,
                 color = "steelblue", 
                 linetype = "twodash")) +
-  #geom_point(aes(y = gmm_ARI_scaled,
-  #                color = "seagreen")) +
   geom_line(aes(y = gmm_ARI_scaled,
                 color = "seagreen",
                 linetype = "solid")) +
-  #geom_point(aes(y = gmm_ARI_unscaled,
-  #                color = "seagreen")) +
   geom_line(aes(y = gmm_ARI_unscaled,
                 color = "seagreen", 
                 linetype = "twodash")) +
