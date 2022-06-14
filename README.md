@@ -5,7 +5,8 @@ This is a cluster analysis of 29 shape feature parameters derived from 1400 bina
 
 ## Contents
 * `gif/` - 1400 binary images of reference shapes
-* `cluster_analysis.R` - R script that executes the cluster analysis.
+* `plots/` - Preconstructed plots comparing clustering method accuracy
+* `cluster_analysis.R` - R script that executes the cluster analysis
 
 ## Dependencies
 * `BiocManager` - `SAFARI` dependency
