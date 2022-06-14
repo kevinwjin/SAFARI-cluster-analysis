@@ -18,29 +18,28 @@
 ## five letters of each file name (~70 clusters for 1400 images with 20 images
 ## in each cluster).
 ##
-## 4. Find a package to calculate the ARI. Install packages also for
-## hierarchical clustering, and Gaussian mixture model clustering.
-##
-## 5. Based on shape features, run k-means for k-values from 2-100. To
+## 4. Based on shape features, run k-means for k-values from 2-100. To
 ## conserve computational resources, you may choose a subset of the
 ## image set, ensuring you have as different images as possible (e.g. ~300
 ## images, representing 10 different objects). Then, run hierarchical
 ## and Gaussian mixture model clustering.
 ##
-## 6. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
+## 5. Create a plot with k-value on the x-axis and ARI on the y-axis. On this 
 ## plot, generate curves of scaled and unscaled data (unscaled would probably 
 ## give low ARI) for each clustering method. This makes 6 curves in total on the
 ## same plot.
+##
+## 6. Clean up code and increase readability and efficiency.
 
 ##### PREPARATION #####
 
 # Install dependencies
 install.packages("BiocManager") # SAFARI dependency
 BiocManager::install("EBImage") # SAFARI dependency
-install.packages("remotes") # For installing SAFARI
+install.packages("remotes") # Installing SAFARI
 remotes::install_github("kevinwjin/SAFARI") # Forked from estfernandez with read.image fix
 install.packages("tidyverse") # dplyr and ggplot2
-install.packages("mclust") # Gaussian mixture model clustering and ARI
+install.packages("mclust") # Gaussian mixture models and adjusted Rand Index
 install.packages("factoextra") # Cluster analysis visualization
 install.packages("parallel") # Parallel computations in R
 
@@ -48,9 +47,9 @@ install.packages("parallel") # Parallel computations in R
 library(SAFARI) # Image processing
 library(dplyr) # Data handling
 library(ggplot2) # Beautiful plots
-library(mclust) # Hierarchical clustering and Gaussian mixture models
-library(factoextra) # Visualization of clusters
-library(parallel) # Parallel computations in R
+library(mclust) 
+library(factoextra) 
+library(parallel) 
 
 ##### LOAD IMAGES #####
 
@@ -285,6 +284,7 @@ ggplot(gmm_ARI, aes(x = k_values)) +
 
 # Visualize accuracy of all clustering methods
 accuracy <- right_join(kmeans_ARI, gmm_ARI, by = "k_values")
+
 names(accuracy) <- c("kmeans_ARI_scaled", 
                      "kmeans_ARI_unscaled", 
                      "k_values",
@@ -319,7 +319,7 @@ ggplot(accuracy, aes(x = k_values)) +
                 linetype = "twodash")) +
   geom_vline(xintercept = 70, 
              color = "red") +
-  labs(title = "Performance Metrics of Several Clustering Methods",
+  labs(title = "Performance of Several Clustering Methods",
        x = "Number of clusters (k-value)",
        y = "Adjusted Rand Index") +
   scale_x_continuous(breaks = seq(0, 100, by = 10)) + 
