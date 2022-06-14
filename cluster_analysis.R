@@ -1,4 +1,4 @@
-## Cluster analysis of shapes extracted from 1400 images processed with SAFARI
+## Cluster analysis of shape features of 1400 images extracted with SAFARI
 ## Author: Kevin Jin
 ##
 ##### TO-DO: ##### 
@@ -97,16 +97,16 @@ features <- data.frame(lapply(features, unlist)) # Flatten column-lists to norma
 # k-means clustering
 rescaled_features <- features %>% mutate_all(scale) # Standardize all variables
 
-# Optimize k (elbow method)
+# Elbow method to find optimal k-value
 kmean_withinss <- function(k) {
-  cluster <- kmeans(rescaled_features, k) # Only try first 40 images
+  cluster <- kmeans(rescaled_features, k)
   return(cluster$tot.withinss)
 }
 max_k <- 100 # Set maximum clusters
 wss <- sapply(2:max_k, kmean_withinss) # Run k-means over all k-values
 elbow <- data.frame(2:max_k, wss) # Create a data frame to plot elbow graph
 
-# Plot elbow method over 20 k-values
+# Visualize elbow method over k-values 1:100 
 ggplot(elbow, aes(x = X2.max_k, y = wss)) +
   labs(title = "Elbow method (total within-cluster sum of squares)",
        x = "k-value",
@@ -115,13 +115,13 @@ ggplot(elbow, aes(x = X2.max_k, y = wss)) +
   geom_line() +
   scale_x_continuous(breaks = seq(1, 100, by = 10))
 
-# Train the k-means algorithm with optimal k
-kmeansTruth_cluster <- kmeans(rescaled_features, 70) # True k is 70 for 1400 images
-kmeansTruth_cluster_unscaled <- kmeans(features, 70)
-kmeans20_cluster <- kmeans(rescaled_features, 20)
-kmeans20_cluster_unscaled <- kmeans(rescaled_features, 20)
+# Compute k-means clusters with optimal k (True k = 70 for 1400 images)
+kmeans_scaled_truth <- kmeans(rescaled_features, 70) # Cluster scaled features
+kmeans_unscaled_truth <- kmeans(features, 70) # Cluster unscaled features
+kmeans_scaled <- kmeans(rescaled_features, 20)
+kmeans_scaled_truth <- kmeans(rescaled_features, 20)
 
-# Visualize clusters; ggplot2 supports a maximum of 25 levels  
+# Visualize k-means clusters (ggplot2 supports a maximum of 25 levels) 
 fviz_cluster(kmeans_cluster, # No labels
              data = rescaled_features,
              geom = "point",
@@ -138,57 +138,50 @@ d <- dist(rescaled_features, method = "euclidean") # Dissimilarity matrix
 hc1 <- hclust(d, method = "complete") # Complete linkage hierarchical clustering
 plot(hcl, cex = 0.6, hang = -1) # Plot dendrogram
 
-# Agnes function
-hc2 <- agnes(rescaled_features, method = "complete")
+hc2 <- agnes(rescaled_features, method = "complete") # Agnes function
 hc2$ac # Agglomerative coefficient
-
-fviz_nbclust(rescaled_features, FUN = hcut, method = "silhouette")
-fviz_nbclust(rescaled_features, FUN = hcut, method = "gap_stat")
 
 # Gaussian mixture model clustering
 
 
-
 ##### EVALUATE CLUSTERING ACCURACY #####
 
-# Calculate adjusted Rand index for each clustering method (compared with truth)
+# Calculate adjusted Rand index for each clustering method 
 max_k <- 100
 temp <- kmeans(x = rescaled_features, centers = 2)[[1]]
 kmeans_mat <- matrix(nrow = 100, ncol = 1400, byrow = TRUE)
 
-# Generate k-means clusters from scaled features
+# Generate k-means clustering from scaled features
 for (k in 1:max_k) {
-  kmeans_mat[k, ] <- kmeans(x = rescaled_features, 
-                            centers = k)[[1]] # Select clustering results
+  kmeans_mat[k, ] <- kmeans(x = rescaled_features,  centers = k)[[1]]
 }
 kmeans_scaled <- as.data.frame(kmeans_mat)
 names(kmeans_scaled) <- names(temp)
 k_values <- 1:max_k
 
-# Generate k-means clusters from unscaled features
+# Generate k-means clustering from unscaled features
 for (k in 1:max_k) {
   kmeans_mat[k, ] <- kmeans(x = features, centers = k)[[1]] # Select clustering results
 }
 kmeans_unscaled <- as.data.frame(kmeans_mat)
 names(kmeans_unscaled) <- names(temp)
 
-# Calculate ARI values for k-means clusters
-kmeans_scaled_truth <- kmeans(rescaled_features, 70)[["cluster"]] # Ground truth
-kmeans_unscaled_truth <- kmeans(features, 70)[["cluster"]] # Ground truth
+# Calculate ARI values for k-means clustering over k = 1:100 (Ground truth: k = 70)
+kmeans_scaled_truth <- kmeans(rescaled_features, 70)[["cluster"]] # Scaled truth
+kmeans_unscaled_truth <- kmeans(features, 70)[["cluster"]] # Unscaled truth
 
-kmeans_ARI <- matrix(nrow = 100, ncol = 2, byrow = TRUE) # ARI over 1:100 k-values
+kmeans_ARI <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
-  # ARI for scaled k-means clusters compared to k = 70
-  kmeans_ARI[i, 1] <- adjustedRandIndex(kmeans_scaled[i, ], 
-                                        kmeans_scaled_truth)
-  # ARI for unscaled k-means clusters compared to k = 70
-  kmeans_ARI[i, 2] <- adjustedRandIndex(kmeans_unscaled[i, ], 
-                                        kmeans_unscaled_truth)
+  # ARI for k-means clustering of scaled features
+  kmeans_ARI[i, 1] <- adjustedRandIndex(kmeans_scaled[i, ], kmeans_scaled_truth)
+  # ARI for k-means clustering of unscaled features
+  kmeans_ARI[i, 2] <- adjustedRandIndex(kmeans_unscaled[i, ], kmeans_unscaled_truth)
 }
 kmeans_ARI <- as.data.frame(kmeans_ARI)
 names(kmeans_ARI) <- c("ARI_scaled", "ARI_unscaled")
 kmeans_ARI <- mutate(kmeans_ARI, k_values = as.numeric(row.names(kmeans_ARI)))
 
+# Visualize accuracy of k-means clustering
 ggplot(kmeans_ARI, aes(x = k_values)) + 
   geom_point(aes(y = ARI_scaled, 
                  color = "darkred")) + 
@@ -214,7 +207,7 @@ ggplot(kmeans_ARI, aes(x = k_values)) +
 # Generate Gaussian mixture model clusters
 
 
-# Plot ARI and k-values for each clustering method
+# Visualize accuracy of each clustering method
 ggplot(accuracy, aes(x = X2.max_k)) +
   labs(title = "Performance Metrics of Several Clustering Methods",
        x = "Number of clusters (k-value)",
