@@ -10,40 +10,23 @@
 ## 2. In the SAFARI fork, set objects for 0 = background and 1 = foreground for
 ## each image.
 ##
-## 3. Next. evaluate three different clustering algorithms (k-means clustering,
-## hierarchical clustering, and Gaussian mixture model clustering). In
-## supervised learning, we use a contingency table to evaluate algorithm
-## sensitivity. In unsupervised learning, we use the Rand index. Here, we will
-## use the adjusted Rand index to evaluate the three clustering methods, and
-## eventually push for a higher ARI than all three.
-##
-## 4. The true number of clusters can be extracted by substringing the first
+## 3. The true number of clusters can be extracted by substringing the first
 ## five letters of each file name (~70 clusters for 1400 images with 20 images
 ## in each cluster).
 ##
-## 5. Based on shape features, run k-means for k-values from 2-100. To
-## conserve computational resources, you may choose a subset of the
-## image set, ensuring you have as different images as possible (e.g. ~300
-## images, representing 10 different objects). Then, run hierarchical
-## and Gaussian mixture model clustering.
+## 4. Clean up code and increase readability and efficiency.
 ##
-## 6. Create a plot with k-value on the x-axis and ARI on the y-axis. On this
-## plot, generate curves of scaled and unscaled data (unscaled would probably
-## give low ARI) for each clustering method. This makes 6 curves in total on the
-## same plot.
-##
-## 7. Clean up code and increase readability and efficiency.
-##
-## 8. Create 10 slides introducing 3 clustering methods to high school students.
+## 5. Create 10 slides introducing 3 clustering methods to high school students.
 ## (Deadline: 2 weeks)
 ##
-## 9. Find more benchmark datasets to demonstrate that GMM performs the best;
-## you want shape image sets. Look for famous papers about image shape clustering.
+## 6. Find more benchmark datasets to demonstrate that GMM performs the best;
+## you want shape image sets. Look for famous papers about image shape
+## clustering.
 ##
-## 10. Implement BayesLASA. Fix k (number of landmark points) and manually judge
+## 7. Implement BayesLASA. Fix k (number of landmark points) and manually judge
 ## if the algorithm can capture the image adequately for all 1400 images.
 ##
-## 11. Try to get "distance vector" for 1 image.
+## 8. Try to get "distance vector" for 1 image.
 
 ##### PREPARATION #####
 
@@ -51,7 +34,8 @@
 install.packages("BiocManager") # SAFARI dependency
 BiocManager::install("EBImage") # SAFARI dependency
 install.packages("remotes") # Installing SAFARI
-remotes::install_github("kevinwjin/SAFARI") # Forked from estfernandez with read.image fix
+remotes::install_github("kevinwjin/
+                        SAFARI") # Forked from estfernandez with read.image fix
 install.packages("tidyverse") # dplyr and ggplot2
 install.packages("mclust") # Gaussian mixture models and adjusted Rand Index
 install.packages("factoextra") # Cluster analysis visualization
@@ -93,20 +77,35 @@ extract_features <- function(img) {
       "topological"
     )
   )
-  features <- data.frame(img_segs[["desc"]][-c(1, 1:4)]) # Delete irrelevant first 4 columns
-  features <- cbind(c(img), features) # Add first column with file name
+  features <- data.frame(img_segs
+  [["desc"]]
+  [-c(1, 1:4)]) # Delete irrelevant first 4 columns
+  features <- cbind(
+    c(img), # Add first column with file name
+    features
+  ) 
   return(features)
 }
 
 # Process all images in parallel
 cl <- makeCluster(8) # Allocate 8 cores; modify as appropriate for system
-clusterExport(cl, varlist = c("read.image", "binary.segmentation")) # Pass function dependencies to each core
-features <- parSapply(cl, file_list, FUN = extract_features) # Parallelized version of sapply
+clusterExport(cl, # Pass function dependencies to each core
+  varlist = c(
+    "read.image",
+    "binary.segmentation"
+  )
+)
+features <- parSapply(cl, # Parallel sapply
+  file_list,
+  FUN = extract_features
+)
 stopCluster(cl) # De-allocate cores and expunge R sessions from memory
 
 # Clean up data frame
-features <- data.frame(t(features), row.names = 1) # Transpose result and delete redundant first column
-features <- data.frame(lapply(features, unlist)) # Flatten column-lists to normal
+features <- data.frame(t(features), # Transpose result
+  row.names = 1 # Delete redundant first column
+) 
+features <- data.frame(lapply(features, unlist)) # Flatten column-lists
 
 ##### CLUSTER ANALYSIS #####
 
@@ -154,12 +153,16 @@ fviz_cluster(kmeans_cluster, # Labels included
 )
 
 # Hierarchical clustering
-hier_scaled <- hclust(dist(rescaled_features, method = "euclidean"), # Dissimilarity matrix
-  method = "ward.D2"
+hier_scaled <- hclust(dist(rescaled_features, # Generate dissimilarity matrix
+  method = "euclidean"
+),
+method = "ward.D2"
 ) # Complete linkage hierarchical clustering
 
-hier_unscaled <- hclust(dist(features, method = "euclidean"),
-  method = "ward.D2"
+hier_unscaled <- hclust(dist(features,
+  method = "euclidean"
+),
+method = "ward.D2"
 )
 
 plot(hier_scaled, cex = 0.1, hang = -0.01) # Plot dendrogram
@@ -197,47 +200,62 @@ plot(gmm_scaled, what = c("classification"))
 
 # Calculate adjusted Rand index for each clustering method
 max_k <- 100
-temp <- kmeans(x = rescaled_features, centers = 2)[["cluster"]] # Get column names
+temp <- kmeans(
+  x = rescaled_features,
+  centers = 2
+)[["cluster"]] # Get column names
 kmeans_mat <- matrix(nrow = 100, ncol = 1400, byrow = TRUE)
 
 # Generate k-means clustering from scaled features
 for (k in 1:max_k) {
-  kmeans_mat[k, ] <- kmeans(x = rescaled_features, centers = k)[["cluster"]]
+  kmeans_mat[k, ] <- kmeans(
+    x = rescaled_features,
+    centers = k
+  )[["cluster"]]
 }
 kmeans_scaled <- as.data.frame(kmeans_mat)
 names(kmeans_scaled) <- names(temp)
 
 # Generate k-means clustering from unscaled features
 for (k in 1:max_k) {
-  kmeans_mat[k, ] <- kmeans(x = features, centers = k)[["cluster"]] # Select clustering results
+  kmeans_mat[k, ] <- kmeans(
+    x = features,
+    centers = k
+  )[["cluster"]] # Select cluster results
 }
 kmeans_unscaled <- as.data.frame(kmeans_mat)
 names(kmeans_unscaled) <- names(temp)
 
-# Calculate ARI values for k-means clustering over k = 1:100 (Ground truth: k = 70)
-kmeans_scaled_truth <- kmeans(rescaled_features, 70)[["cluster"]] # Scaled truth
-kmeans_unscaled_truth <- kmeans(features, 70)[["cluster"]] # Unscaled truth
+# Calculate ARI values for k-means over k = 1:100 (Ground truth: k = 70)
+kmeans_scaled_truth <- kmeans(
+  rescaled_features,
+  70
+)[["cluster"]] # Scaled truth
+kmeans_unscaled_truth <- kmeans(
+  features,
+  70
+)[["cluster"]] # Unscaled truth
 
-kmeans_ARI <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
+kmeans_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
   # ARI for k-means clustering of scaled features
-  kmeans_ARI[i, 1] <- adjustedRandIndex(
+  kmeans_ari[i, 1] <- adjustedRandIndex(
     unlist(kmeans_scaled[i, ]),
     kmeans_scaled_truth
   )
   # ARI for k-means clustering of unscaled features
-  kmeans_ARI[i, 2] <- adjustedRandIndex(
+  kmeans_ari[i, 2] <- adjustedRandIndex(
     unlist(kmeans_unscaled[i, ]),
     kmeans_unscaled_truth
   )
 }
-kmeans_ARI <- as.data.frame(kmeans_ARI)
-names(kmeans_ARI) <- c("ARI_scaled", "ARI_unscaled")
+kmeans_ari <- as.data.frame(kmeans_ari)
+names(kmeans_ari) <- c("ARI_scaled", "ARI_unscaled")
 k_values <- 1:max_k
-kmeans_ARI <- mutate(kmeans_ARI, k_values = as.numeric(row.names(kmeans_ARI)))
+kmeans_ari <- mutate(kmeans_ari, k_values = as.numeric(row.names(kmeans_ari)))
 
 # Visualize k-means clustering accuracy
-ggplot(kmeans_ARI, aes(x = k_values)) +
+ggplot(kmeans_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
     color = "darkred"
@@ -269,9 +287,9 @@ ggplot(kmeans_ARI, aes(x = k_values)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 # Generate hierarchical clusters
-hier_scaled_tree <- hclust(dist(rescaled_features, method = "euclidean"), # Dissimilarity matrix
-  method = "complete"
-) # Complete linkage hierarchical clustering
+hier_scaled_tree <- hclust(dist(rescaled_features, method = "euclidean"),
+  method = "complete" # Complete linkage hierarchical clustering
+)
 
 hier_unscaled_tree <- hclust(dist(features, method = "euclidean"),
   method = "complete"
@@ -297,30 +315,30 @@ for (k in 1:max_k) {
 hier_unscaled <- as.data.frame(hier_mat)
 names(hier_unscaled) <- temp
 
-# Calculate ARI values for hierarchical clustering over k = 1:100 (Ground truth: k = 70)
+# Calculate ARI values for hierarchical over k = 1:100 (Ground truth: k = 70)
 hier_scaled_truth <- cutree(hier_scaled_tree, k = 70) # Scaled truth
 hier_unscaled_truth <- cutree(hier_unscaled_tree, k = 70) # Unscaled truth
 
-hier_ARI <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
+hier_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
   # ARI for hierarchical clustering of scaled features
-  hier_ARI[i, 1] <- adjustedRandIndex(
+  hier_ari[i, 1] <- adjustedRandIndex(
     unlist(hier_scaled[i, ]),
     hier_scaled_truth
   )
   # ARI for hierarchical clustering of unscaled features
-  hier_ARI[i, 2] <- adjustedRandIndex(
+  hier_ari[i, 2] <- adjustedRandIndex(
     unlist(hier_unscaled[i, ]),
     hier_unscaled_truth
   )
 }
-hier_ARI <- as.data.frame(hier_ARI)
-names(hier_ARI) <- c("ARI_scaled", "ARI_unscaled")
+hier_ari <- as.data.frame(hier_ari)
+names(hier_ari) <- c("ARI_scaled", "ARI_unscaled")
 k_values <- 1:max_k
-hier_ARI <- mutate(hier_ARI, k_values = as.numeric(row.names(hier_ARI)))
+hier_ari <- mutate(hier_ari, k_values = as.numeric(row.names(hier_ari)))
 
-# Visualize GMM clustering accuracy
-ggplot(hier_ARI, aes(x = k_values)) +
+# Visualize hierarchical clustering accuracy
+ggplot(hier_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
     color = "darkred"
@@ -370,30 +388,34 @@ for (k in 1:max_k) {
 gmm_unscaled <- as.data.frame(gmm_mat)
 names(gmm_unscaled) <- row.names(features)
 
-# Calculate ARI values for GMM clustering over k = 1:100 (Ground truth: k = 70)
-gmm_scaled_truth <- Mclust(rescaled_features, G = 70)$classification # Scaled truth
-gmm_unscaled_truth <- Mclust(features, G = 70)$classification # Unscaled truth
+# Calculate ARI values for GMM over k = 1:100 (Ground truth: k = 70)
+gmm_scaled_truth <- Mclust(rescaled_features,
+  G = 70
+)$classification # Scaled truth
+gmm_unscaled_truth <- Mclust(features,
+  G = 70
+)$classification # Unscaled truth
 
-gmm_ARI <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
+gmm_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
   # ARI for GMM clustering of scaled features
-  gmm_ARI[i, 1] <- adjustedRandIndex(
+  gmm_ari[i, 1] <- adjustedRandIndex(
     unlist(gmm_scaled[i, ]),
     gmm_scaled_truth
   )
   # ARI for GMM clustering of unscaled features
-  gmm_ARI[i, 2] <- adjustedRandIndex(
+  gmm_ari[i, 2] <- adjustedRandIndex(
     unlist(gmm_unscaled[i, ]),
     gmm_unscaled_truth
   )
 }
-gmm_ARI <- as.data.frame(gmm_ARI)
-names(gmm_ARI) <- c("ARI_scaled", "ARI_unscaled")
+gmm_ari <- as.data.frame(gmm_ari)
+names(gmm_ari) <- c("ARI_scaled", "ARI_unscaled")
 k_values <- 1:max_k
-gmm_ARI <- mutate(gmm_ARI, k_values = as.numeric(row.names(gmm_ARI)))
+gmm_ari <- mutate(gmm_ari, k_values = as.numeric(row.names(gmm_ari)))
 
 # Visualize GMM clustering accuracy
-ggplot(gmm_ARI, aes(x = k_values)) +
+ggplot(gmm_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
     color = "darkred"
@@ -425,47 +447,47 @@ ggplot(gmm_ARI, aes(x = k_values)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 # Visualize accuracy of all clustering methods
-accuracy <- right_join(kmeans_ARI, gmm_ARI, by = "k_values")
-accuracy <- right_join(accuracy, hier_ARI, by = "k_values")
+accuracy <- right_join(kmeans_ari, gmm_ari, by = "k_values")
+accuracy <- right_join(accuracy, hier_ari, by = "k_values")
 
 names(accuracy) <- c(
-  "kmeans_ARI_scaled",
-  "kmeans_ARI_unscaled",
+  "kmeans_ari_scaled",
+  "kmeans_ari_unscaled",
   "k_values",
-  "gmm_ARI_scaled",
-  "gmm_ARI_unscaled",
-  "hier_ARI_scaled",
-  "hier_ARI_unscaled"
+  "gmm_ari_scaled",
+  "gmm_ari_unscaled",
+  "hier_ari_scaled",
+  "hier_ari_unscaled"
 )
 
 ggplot(accuracy, aes(x = k_values)) +
   geom_line(aes(
-    y = kmeans_ARI_scaled,
+    y = kmeans_ari_scaled,
     color = "darkred",
     linetype = "solid"
   )) +
   geom_line(aes(
-    y = kmeans_ARI_unscaled,
+    y = kmeans_ari_unscaled,
     color = "darkred",
     linetype = "twodash"
   )) +
   geom_line(aes(
-    y = hier_ARI_scaled,
+    y = hier_ari_scaled,
     color = "steelblue",
     linetype = "solid"
   )) +
   geom_line(aes(
-    y = hier_ARI_unscaled,
+    y = hier_ari_unscaled,
     color = "steelblue",
     linetype = "twodash"
   )) +
   geom_line(aes(
-    y = gmm_ARI_scaled,
+    y = gmm_ari_scaled,
     color = "seagreen",
     linetype = "solid"
   )) +
   geom_line(aes(
-    y = gmm_ARI_unscaled,
+    y = gmm_ari_unscaled,
     color = "seagreen",
     linetype = "twodash"
   )) +
