@@ -111,7 +111,6 @@ features <- data.frame(lapply(features, unlist)) # Flatten column-lists
 
 # k-means clustering
 rescaled_features <- features %>% mutate_all(scale) # Standardize all variables
-
 # Elbow method to find optimal k-value
 kmean_withinss <- function(k) { # k-means within-cluster sum of squares
   cluster <- kmeans(rescaled_features, k)
