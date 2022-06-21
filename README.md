@@ -12,10 +12,11 @@ novel model-based clustering method.
 * `data/` - Datasets
 * `plots/` - Generated plots comparing clustering method accuracy
 * `cluster_analysis.R` - R script that executes the cluster analysis
+* `image_thresholding.R` - R script that thresholds grayscale images to binary
 
 ## Dependencies
 * `BiocManager` - `SAFARI` dependency
-* `EBImage` - `SAFARI` dependency
+* `EBImage` - `SAFARI` dependency and image thresholding
 * `remotes` - For installing `SAFARI`
 * `SAFARI` - For segmenting shapes within images and extracting shape features
 * `tidyverse` - Data manipulation with `dplyr` and graphics with `ggplot2`
