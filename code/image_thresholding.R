@@ -15,13 +15,23 @@ library(SAFARI) # Image processing
 library(dplyr) 
 
 # Retrieve list of all images (set working directory to image folder)
-file_list <- dir(pattern = "gif$")
+file_list <- dir(pattern = "tiff$")
 
 # Read image
 x <- readImage("KA.AN1.39.tiff")
 display(x)
 
 # Threshold with Otsu's method
-colorMode(x) <- 0 # convert to grayscale
-y <- x > otsu(x)
-display(y)
+image_thresholding <- function(img) {
+  x <- readImage("KA.AN1.39.tiff")
+  
+  if (colorMode(x) != "Grayscale") {
+    colorMode(x) <- "Grayscale"  # convert to grayscale
+  }
+  
+  y <- x > otsu(x)
+  return(y)
+}
+
+# Threshold all images in folder
+binary <- sapply(file_list, FUN = image_thresholding)
