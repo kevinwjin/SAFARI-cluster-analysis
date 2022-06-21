@@ -18,9 +18,10 @@ library(dplyr)
 file_list <- dir(pattern = "gif$")
 
 # Read image
-x <- readImage("lena_gray_256.tif")
+x <- readImage("KA.AN1.39.tiff")
 display(x)
 
 # Threshold with Otsu's method
+colorMode(x) <- 0 # convert to grayscale
 y <- x > otsu(x)
 display(y)
