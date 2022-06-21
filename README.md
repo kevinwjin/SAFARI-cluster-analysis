@@ -11,8 +11,8 @@ novel model-based clustering method.
 ## Contents
 * `data/` - Datasets
 * `plots/` - Generated plots comparing clustering method accuracy
-* `cluster_analysis.R` - R script that executes the cluster analysis
-* `image_thresholding.R` - R script that thresholds grayscale images to binary
+* `code/cluster_analysis.R` - R script that executes the cluster analysis
+* `code/image_thresholding.R` - R script that thresholds grayscale images to binary
 
 ## Dependencies
 * `BiocManager` - `SAFARI` dependency
