@@ -11,7 +11,7 @@ novel model-based clustering method.
 ## Datasets
 
 * `MPEG-7` - 70 classes (shapes) of 20 images each with minor differences in between.
-* `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 subclasses 
+* `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 subclasses
 each with 41 images in each subclass.
 * `Iris` - Famous dataset from 1936. 150 observations with 4 variables.
 
@@ -28,8 +28,8 @@ each with 41 images in each subclass.
 * `BiocManager` - `SAFARI` dependency
 * `EBImage` - `SAFARI` dependency and image thresholding
 * `remotes` - For installing `SAFARI`
-* `SAFARI` - For segmenting shapes within images and extracting shape features
+* `SAFARI` - For segmenting shapes from binary images and extracting shape features
 * `tidyverse` - Data manipulation with `dplyr` and graphics with `ggplot2`
-* `mclust` - Hierarchical and Gaussian mixture model clustering
+* `mclust` - Gaussian mixture model clustering and Adjusted Rand Index
 * `factoextra` - Beautiful cluster visualizations
 * `parallel` - Parallel computation in R
