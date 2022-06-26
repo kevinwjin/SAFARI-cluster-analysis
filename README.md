@@ -1,20 +1,30 @@
-# Cluster analysis of SAFARI-analyzed MPEG-7 features
+# Cluster analysis of SAFARI-extracted features
 
 ## Description
-This is a cluster analysis of 29 shape feature parameters derived from the 
-MPEG-7 dataset, which contains 1400 binary images of reference shapes, 
-processed with the R package `SAFARI`. There are 70 shapes represented by 20 
-images each, with minor differences in between. The goal of this project is to 
-evaluate different clustering methods of image shape features and devise a 
+
+This is a cluster analysis of 29 shape feature parameters derived from several
+image sets, which contain binary images of reference shapes, segmented and processed
+with the R package `SAFARI`. The goal of this project is to evaluate the performance of
+different clustering methods based on similarity to the ground truth and devise a
 novel model-based clustering method.
 
+## Datasets
+
+* `MPEG-7` - 70 classes (shapes) of 20 images each with minor differences in between.
+* `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 subclasses 
+each with 41 images in each subclass.
+* `Iris` - Famous dataset from 1936. 150 observations with 4 variables.
+
 ## Contents
+
 * `data/` - Datasets
 * `plots/` - Generated plots comparing clustering method accuracy
-* `code/cluster_analysis.R` - R script that executes the cluster analysis
-* `code/image_thresholding.R` - R script that thresholds grayscale images to binary
+* `code/cluster_analysis.R` - Image feature clustering execution script
+* `code/image_thresholding.R` - Thresholds grayscale images to binary
+* `code/cluster_evaluation.R` - Traditional dataset clustering execution script
 
 ## Dependencies
+
 * `BiocManager` - `SAFARI` dependency
 * `EBImage` - `SAFARI` dependency and image thresholding
 * `remotes` - For installing `SAFARI`
