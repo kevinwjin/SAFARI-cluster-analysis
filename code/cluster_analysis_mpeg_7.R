@@ -1,6 +1,6 @@
-## Cluster analysis of shape features extracted with SAFARI
+## Cluster analysis of SAFARI-extracted shape features from MPEG-7
 ## Author: Kevin Jin
-##
+
 ##### TO-DO: #####
 ##
 ## 1. First, ensure that the data is clean. Check case by case to make sure
@@ -11,22 +11,12 @@
 ## each image.
 ##
 ## 3. The true number of clusters can be extracted by substringing the first
-## five letters of each file name (~70 clusters for 1400 images with 20 images
+## five letters of each file name (70 clusters for 1400 images with 20 images
 ## in each cluster).
 ##
 ## 4. Clean up code and increase readability and efficiency.
 ##
-## 5. Create 10 slides introducing 3 clustering methods to high school students.
-## (Deadline: 2 weeks)
-##
-## 6. Find more benchmark datasets to demonstrate that GMM performs the best;
-## you want shape image sets. Look for famous papers about image shape
-## clustering.
-##
-## 7. Implement BayesLASA. Fix k (number of landmark points) and manually judge
-## if the algorithm can capture the image adequately for all 1400 images.
-##
-## 8. Try to get "distance vector" for 1 image.
+## 5. Extract ground truth for MPEG-7 and ETH-80, and redo all ARI plots.
 
 ##### PREPARATION #####
 
@@ -52,7 +42,7 @@ library(parallel)
 ##### LOAD IMAGES #####
 
 # Retrieve list of all images (set directory to image folder)
-file_list <- dir(pattern = "png$") # Choose appropriate image extension
+file_list <- dir(pattern = "gif$") # Choose appropriate image extension
 
 ##### PROCESS IMAGES AND EXTRACT FEATURES #####
 
@@ -116,7 +106,7 @@ kmean_withinss <- function(k) { # k-means within-cluster sum of squares
   cluster <- kmeans(features_scaled, k)
   return(cluster$tot.withinss)
 }
-max_k <- 20 # Set maximum clusters
+max_k <- 100 # Set maximum clusters
 wss <- sapply(2:max_k, kmean_withinss) # Calculate WSS for all k-values
 elbow <- data.frame(2:max_k, wss) # Create a data frame to plot elbow graph
 
@@ -129,11 +119,11 @@ ggplot(elbow, aes(x = X2.max_k, y = wss)) +
   ) +
   geom_point() +
   geom_line() +
-  scale_x_continuous(breaks = seq(1, 20, by = 1))
+  scale_x_continuous(breaks = seq(1, 100, by = 10))
 
-# Compute k-means clusters with optimal k (True k = 8 for 3280 images)
-kmeans_scaled_truth <- kmeans(features_scaled, 8) # Cluster scaled features
-kmeans_unscaled_truth <- kmeans(features, 8) # Cluster unscaled features
+# Compute k-means clusters with optimal k (True k = 70 for 1400 images)
+kmeans_scaled_truth <- kmeans(features_scaled, 70) # Cluster scaled features
+kmeans_unscaled_truth <- kmeans(features, 70) # Cluster unscaled features
 
 # Visualize k-means clusters (ggplot2 supports a maximum of 25 levels)
 fviz_cluster(kmeans_scaled_truth, # No labels
@@ -141,12 +131,12 @@ fviz_cluster(kmeans_scaled_truth, # No labels
   geom = "point",
   ellipse.type = "convex",
   ggtheme = theme_bw(),
-  main = "k-means clustering of shape features from 3280 images (k = 8)"
+  main = "k-means clustering of shape features from 1400 images (k = 70)"
 )
 
 fviz_cluster(kmeans_cluster, # Labels included
   data = features_scaled,
-  main = "k-means clustering of shape features from 3280 images (k = 8)"
+  main = "k-means clustering of shape features from 1400 images (k = 70)"
 )
 
 # Hierarchical clustering
@@ -201,7 +191,7 @@ temp <- kmeans(
   x = features_scaled,
   centers = 2
 )[["cluster"]] # Get column names
-kmeans_mat <- matrix(nrow = 100, ncol = 3280, byrow = TRUE)
+kmeans_mat <- matrix(nrow = 100, ncol = 1400, byrow = TRUE)
 
 # Generate k-means clustering from scaled features
 for (k in 1:max_k) {
@@ -223,14 +213,14 @@ for (k in 1:max_k) {
 kmeans_unscaled <- as.data.frame(kmeans_mat)
 names(kmeans_unscaled) <- names(temp)
 
-# Calculate ARI values for k-means over k = 1:100 (Ground truth: k = 8)
+# Calculate ARI values for k-means over k = 1:100 (Ground truth: k = 70)
 kmeans_scaled_truth <- kmeans(
   features_scaled,
-  8 # Scaled truth
+  70 # Scaled truth
 )[["cluster"]] 
 kmeans_unscaled_truth <- kmeans(
   features,
-  8 # Unscaled truth
+  70 # Unscaled truth
 )[["cluster"]] 
 
 kmeans_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
@@ -270,11 +260,11 @@ ggplot(kmeans_ari, aes(x = k_values)) +
     color = "steelblue"
   )) +
   geom_vline(
-    xintercept = 8, # Ground truth
+    xintercept = 70, # Ground truth
     color = "red"
   ) +
   labs(
-    title = "k-means clustering accuracy (ground truth: k = 8)",
+    title = "k-means clustering accuracy (ground truth: k = 70)",
     x = "k-value",
     y = "Adjusted Rand Index",
     color = "Features"
@@ -296,7 +286,7 @@ max_k <- 100
 temp <- hclust(dist(features_scaled, method = "euclidean"),
   method = "complete"
 )[["labels"]]
-hier_mat <- matrix(nrow = 100, ncol = 3280, byrow = TRUE)
+hier_mat <- matrix(nrow = 100, ncol = 1400, byrow = TRUE)
 
 # Generate hierarchical clustering from scaled features
 for (k in 1:max_k) {
@@ -312,9 +302,9 @@ for (k in 1:max_k) {
 hier_unscaled <- as.data.frame(hier_mat)
 names(hier_unscaled) <- temp
 
-# Calculate ARI values for hierarchical over k = 1:100 (Ground truth: k = 8)
-hier_scaled_truth <- cutree(hier_scaled_tree, k = 8) # Scaled truth
-hier_unscaled_truth <- cutree(hier_unscaled_tree, k = 8) # Unscaled truth
+# Calculate ARI values for hierarchical over k = 1:100 (Ground truth: k = 70)
+hier_scaled_truth <- cutree(hier_scaled_tree, k = 70) # Scaled truth
+hier_unscaled_truth <- cutree(hier_unscaled_tree, k = 70) # Unscaled truth
 
 hier_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
@@ -353,11 +343,11 @@ ggplot(hier_ari, aes(x = k_values)) +
     color = "steelblue"
   )) +
   geom_vline(
-    xintercept = 8, # Ground truth
+    xintercept = 70, # Ground truth
     color = "red"
   ) +
   labs(
-    title = "Hierarchical clustering accuracy (ground truth: k = 8)",
+    title = "Hierarchical clustering accuracy (ground truth: k = 70)",
     x = "k-value",
     y = "Adjusted Rand Index",
     color = "Features"
@@ -387,10 +377,10 @@ names(gmm_unscaled) <- row.names(features)
 
 # Calculate ARI values for GMM over k = 1:100 (Ground truth: k = 70)
 gmm_scaled_truth <- Mclust(features_scaled,
-  G = 8
+  G = 70
 )$classification # Scaled truth
 gmm_unscaled_truth <- Mclust(features,
-  G = 8
+  G = 70
 )$classification # Unscaled truth
 
 gmm_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
@@ -430,11 +420,11 @@ ggplot(gmm_ari, aes(x = k_values)) +
     color = "steelblue"
   )) +
   geom_vline(
-    xintercept = 8, # Ground truth
+    xintercept = 70, # Ground truth
     color = "red"
   ) +
   labs(
-    title = "GMM clustering accuracy (ground truth: k = 8)",
+    title = "GMM clustering accuracy (ground truth: k = 70)",
     x = "k-value",
     y = "Adjusted Rand Index",
     color = "Features"
@@ -489,11 +479,11 @@ ggplot(accuracy, aes(x = k_values)) +
     linetype = "twodash"
   )) +
   geom_vline(
-    xintercept = 8,
+    xintercept = 70,
     color = "red"
   ) +
   labs(
-    title = "Performance of Several Clustering Methods (Data: Segmented ETH-80)",
+    title = "Performance of Several Clustering Methods Performed on MPEG-7",
     x = "Number of clusters (k-value)",
     y = "Adjusted Rand Index"
   ) +
