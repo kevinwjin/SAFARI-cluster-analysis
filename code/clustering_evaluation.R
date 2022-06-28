@@ -1,26 +1,29 @@
 library(dplyr)
 library(ggplot2)
 library(mclust)
+library(readxl)
 
-data(iris)
+bean <- read_excel("Dry_Bean_Dataset.xlsx")
 
 # Scale data
-iris_unscaled <- iris %>% select(-Species)
-iris_scaled <- iris_unscaled %>% mutate_all(scale) 
+unscaled <- bean %>% select(-Class)
+scaled <- unscaled %>% mutate_all(scale) 
 
 ##### K-MEANS #####
 
 # Calculate adjusted Rand index for each clustering method
 max_k <- 100
 kmeans_mat <- matrix(nrow = max_k, 
-                     ncol = nrow(iris), 
+                     ncol = nrow(bean), 
                      byrow = TRUE)
 
 # Generate k-means clustering from scaled features
 for (k in 1:max_k) {
   kmeans_mat[k, ] <- kmeans(
-    x = iris_scaled,
-    centers = k
+    x = scaled,
+    centers = k,
+    iter.max = 30,
+    nstart = 20
   )[["cluster"]]
 }
 kmeans_scaled <- as.data.frame(kmeans_mat)
@@ -28,20 +31,22 @@ kmeans_scaled <- as.data.frame(kmeans_mat)
 # Generate k-means clustering from unscaled features
 for (k in 1:max_k) {
   kmeans_mat[k, ] <- kmeans(
-    x = iris_unscaled,
-    centers = k
+    x = unscaled,
+    centers = k,
+    iter.max = 30,
+    nstart = 20
   )[["cluster"]] 
 }
 kmeans_unscaled <- as.data.frame(kmeans_mat)
 
-# Calculate ARI values for k-means over k = 1:100 (Ground truth: 4 species)
+# Calculate ARI values for k-means over k = 1:100 (Ground truth: 7 species)
 kmeans_scaled_truth <- kmeans(
-  x = iris_scaled,
-  centers = 4
+  x = scaled,
+  centers = 7
 )[["cluster"]] # Scaled truth
 kmeans_unscaled_truth <- kmeans(
-  x = iris_unscaled,
-  centers = 4
+  x = unscaled,
+  centers = 7
 )[["cluster"]] # Unscaled truth
 
 kmeans_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
@@ -81,11 +86,11 @@ ggplot(kmeans_ari, aes(x = k_values)) +
     color = "steelblue"
   )) +
   geom_vline(
-    xintercept = 4,
+    xintercept = 7,
     color = "red"
   ) +
   labs(
-    title = "k-means clustering accuracy (ground truth: k = 4)",
+    title = "k-means clustering accuracy (ground truth: k = 7)",
     x = "k-value",
     y = "Adjusted Rand Index",
     color = "Features"
@@ -97,17 +102,17 @@ ggplot(kmeans_ari, aes(x = k_values)) +
 ##### HIERARCHICAL #####
 
 # Generate hierarchical clusters
-hier_scaled_tree <- hclust(dist(iris_scaled, method = "euclidean"),
+hier_scaled_tree <- hclust(dist(scaled, method = "euclidean"),
                            method = "complete" # Complete linkage
 )
 
-hier_unscaled_tree <- hclust(dist(iris_unscaled, method = "euclidean"),
+hier_unscaled_tree <- hclust(dist(unscaled, method = "euclidean"),
                              method = "complete"
 )
 
 max_k <- 100
 hier_mat <- matrix(nrow = max_k, 
-                   ncol = nrow(iris), 
+                   ncol = nrow(bean), 
                    byrow = TRUE)
 
 # Generate hierarchical clustering from scaled features
@@ -123,8 +128,8 @@ for (k in 1:max_k) {
 hier_unscaled <- as.data.frame(hier_mat)
 
 # Calculate ARI values for hierarchical over k = 1:100
-hier_scaled_truth <- cutree(hier_scaled_tree, k = 4) # Scaled truth
-hier_unscaled_truth <- cutree(hier_unscaled_tree, k = 4) # Unscaled truth
+hier_scaled_truth <- cutree(hier_scaled_tree, k = 7) # Scaled truth
+hier_unscaled_truth <- cutree(hier_unscaled_tree, k = 7) # Unscaled truth
 
 hier_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
@@ -163,11 +168,11 @@ ggplot(hier_ari, aes(x = k_values)) +
     color = "steelblue"
   )) +
   geom_vline(
-    xintercept = 4,
+    xintercept = 7,
     color = "red"
   ) +
   labs(
-    title = "Hierarchical clustering accuracy (ground truth: k = 4)",
+    title = "Hierarchical clustering accuracy (ground truth: k = 7)",
     x = "k-value",
     y = "Adjusted Rand Index",
     color = "Features"
@@ -181,27 +186,27 @@ ggplot(hier_ari, aes(x = k_values)) +
 # Generate Gaussian mixture model clusters
 max_k <- 100
 gmm_mat <- matrix(nrow = max_k, 
-                  ncol = nrow(iris), 
+                  ncol = nrow(bean), 
                   byrow = TRUE)
 
 # Generate GMM clustering from scaled features
 for (k in 1:max_k) {
-  gmm_mat[k, ] <- Mclust(iris_scaled, G = k)$classification
+  gmm_mat[k, ] <- Mclust(scaled, G = k)$classification
 }
 gmm_scaled <- as.data.frame(gmm_mat)
 
 # Generate GMM clustering from unscaled features
 for (k in 1:max_k) {
-  gmm_mat[k, ] <- Mclust(iris_unscaled, G = k)$classification
+  gmm_mat[k, ] <- Mclust(unscaled, G = k)$classification
 }
 gmm_unscaled <- as.data.frame(gmm_mat)
 
 # Calculate ARI values for GMM over k = 1:100 (Ground truth: k = 4)
-gmm_scaled_truth <- Mclust(iris_scaled,
-                           G = 4
+gmm_scaled_truth <- Mclust(scaled,
+                           G = 7
 )$classification # Scaled truth
-gmm_unscaled_truth <- Mclust(iris_unscaled,
-                             G = 4
+gmm_unscaled_truth <- Mclust(unscaled,
+                             G = 7
 )$classification # Unscaled truth
 
 gmm_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
@@ -241,11 +246,11 @@ ggplot(gmm_ari, aes(x = k_values)) +
     color = "steelblue"
   )) +
   geom_vline(
-    xintercept = 4,
+    xintercept = 7,
     color = "red"
   ) +
   labs(
-    title = "GMM clustering accuracy (ground truth: k = 4)",
+    title = "GMM clustering accuracy (ground truth: k = 7)",
     x = "k-value",
     y = "Adjusted Rand Index",
     color = "Features"
@@ -302,7 +307,7 @@ ggplot(accuracy, aes(x = k_values)) +
     linetype = "twodash"
   )) +
   geom_vline(
-    xintercept = 4,
+    xintercept = 7,
     color = "red"
   ) +
   labs(
@@ -314,6 +319,8 @@ ggplot(accuracy, aes(x = k_values)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
   scale_color_hue(labels = c("k-means", "Hierarchical", "GMM")) +
   scale_linetype(labels = c("Scaled", "Unscaled"))
+
+
 
 
 
