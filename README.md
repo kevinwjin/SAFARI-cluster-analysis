@@ -11,17 +11,17 @@ novel model-based clustering method.
 ## Datasets
 
 * `MPEG-7` - 70 classes (shapes) of 20 images each with minor differences in between.
-* `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 subclasses
-each with 41 images in each subclass.
+* `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 subclasses each, with 41 images in each subclass.
 * `Iris` - Famous dataset from 1936. 150 observations with 4 variables.
 
 ## Contents
 
 * `data/` - Datasets
 * `plots/` - Generated plots comparing clustering method accuracy
-* `code/cluster_analysis.R` - Image feature clustering execution script
+* `code/mpeg_7.R` - Cluster analysis of MPEG-7 features
+* `code/eth_80.R` - Cluster analysis of ETH-80 features
+* `code/iris.R` - Cluster analysis of the Iris dataset
 * `code/image_thresholding.R` - Thresholds grayscale images to binary
-* `code/cluster_evaluation.R` - Traditional dataset clustering execution script
 
 ## Dependencies
 
