@@ -20,10 +20,11 @@ data(iris)
 unscaled <- iris %>% select(-Species) # Remove species column
 scaled <- unscaled %>% mutate_all(scale) 
 
-##### K-MEANS #####
+##### EXTRACT GROUND TRUTH #####
+truth <- as.numeric(iris$Species)  # Ground truth: 4 species
 
-# Calculate adjusted Rand index for each clustering method
-max_k <- 100
+##### K-MEANS #####
+max_k <- 20
 kmeans_mat <- matrix(nrow = max_k, 
                      ncol = nrow(iris), 
                      byrow = TRUE)
@@ -50,27 +51,20 @@ for (k in 1:max_k) {
 }
 kmeans_unscaled <- as.data.frame(kmeans_mat)
 
-# Calculate ARI values for k-means over k = 1:100 (Ground truth: 4 species)
-kmeans_scaled_truth <- kmeans(
-  x = scaled,
-  centers = 3
-)[["cluster"]] # Scaled truth
-kmeans_unscaled_truth <- kmeans(
-  x = unscaled,
-  centers = 3
-)[["cluster"]] # Unscaled truth
-
-kmeans_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
+# Calculate adjusted Rand index for k-means over 1:20
+kmeans_ari <- matrix(nrow = max_k, 
+                     ncol = 2, 
+                     byrow = TRUE)
 for (i in 1:max_k) {
   # ARI for k-means clustering of scaled features
   kmeans_ari[i, 1] <- adjustedRandIndex(
     unlist(kmeans_scaled[i, ]),
-    kmeans_scaled_truth
+    truth
   )
   # ARI for k-means clustering of unscaled features
   kmeans_ari[i, 2] <- adjustedRandIndex(
     unlist(kmeans_unscaled[i, ]),
-    kmeans_unscaled_truth
+    truth
   )
 }
 kmeans_ari <- as.data.frame(kmeans_ari)
@@ -107,7 +101,7 @@ ggplot(kmeans_ari, aes(x = k_values)) +
     color = "Features"
   ) +
   scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
+  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 ##### HIERARCHICAL #####
@@ -121,7 +115,7 @@ hier_unscaled_tree <- hclust(dist(unscaled, method = "euclidean"),
                              method = "complete"
 )
 
-max_k <- 100
+max_k <- 20
 hier_mat <- matrix(nrow = max_k, 
                    ncol = nrow(iris), 
                    byrow = TRUE)
@@ -138,21 +132,18 @@ for (k in 1:max_k) {
 }
 hier_unscaled <- as.data.frame(hier_mat)
 
-# Calculate ARI values for hierarchical over k = 1:100
-hier_scaled_truth <- cutree(hier_scaled_tree, k = 3) # Scaled truth
-hier_unscaled_truth <- cutree(hier_unscaled_tree, k = 3) # Unscaled truth
-
-hier_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
+# Calculate ARI values for GMM over k = 1:20 (Ground truth: 3 species)
+hier_ari <- matrix(nrow = max_k, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
   # ARI for hierarchical clustering of scaled features
   hier_ari[i, 1] <- adjustedRandIndex(
     unlist(hier_scaled[i, ]),
-    hier_scaled_truth
+    truth
   )
   # ARI for hierarchical clustering of unscaled features
   hier_ari[i, 2] <- adjustedRandIndex(
     unlist(hier_unscaled[i, ]),
-    hier_unscaled_truth
+    truth
   )
 }
 hier_ari <- as.data.frame(hier_ari)
@@ -189,13 +180,13 @@ ggplot(hier_ari, aes(x = k_values)) +
     color = "Features"
   ) +
   scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
+  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 ##### GAUSSIAN MIXTURE MODEL #####
 
 # Generate Gaussian mixture model clusters
-max_k <- 100
+max_k <- 20
 gmm_mat <- matrix(nrow = max_k, 
                   ncol = nrow(iris), 
                   byrow = TRUE)
@@ -212,25 +203,18 @@ for (k in 1:max_k) {
 }
 gmm_unscaled <- as.data.frame(gmm_mat)
 
-# Calculate ARI values for GMM over k = 1:100 (Ground truth: 3 species)
-gmm_scaled_truth <- Mclust(scaled,
-                           G = 3
-)$classification # Scaled truth
-gmm_unscaled_truth <- Mclust(unscaled,
-                             G = 3
-)$classification # Unscaled truth
-
-gmm_ari <- matrix(nrow = 100, ncol = 2, byrow = TRUE)
+# Calculate ARI values for GMM over k = 1:20 (Ground truth: 3 species)
+gmm_ari <- matrix(nrow = max_k, ncol = 2, byrow = TRUE)
 for (i in 1:max_k) {
   # ARI for GMM clustering of scaled features
   gmm_ari[i, 1] <- adjustedRandIndex(
     unlist(gmm_scaled[i, ]),
-    gmm_scaled_truth
+    truth
   )
   # ARI for GMM clustering of unscaled features
   gmm_ari[i, 2] <- adjustedRandIndex(
     unlist(gmm_unscaled[i, ]),
-    gmm_unscaled_truth
+    truth
   )
 }
 gmm_ari <- as.data.frame(gmm_ari)
@@ -267,7 +251,7 @@ ggplot(gmm_ari, aes(x = k_values)) +
     color = "Features"
   ) +
   scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
+  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 ##### ALL METHODS #####
@@ -326,7 +310,7 @@ ggplot(accuracy, aes(x = k_values)) +
     x = "Number of clusters (k-value)",
     y = "Adjusted Rand Index"
   ) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
+  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
   scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
-  scale_color_hue(labels = c("k-means", "Hierarchical", "GMM")) +
+  scale_color_hue(labels = c("k-means", "GMM", "Hierarchical")) +
   scale_linetype(labels = c("Scaled", "Unscaled"))
