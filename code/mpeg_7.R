@@ -38,6 +38,7 @@ library(ggplot2) # Beautiful plots
 library(mclust)
 library(factoextra)
 library(parallel)
+library(stringr) # String extraction
 
 ##### LOAD IMAGES #####
 
