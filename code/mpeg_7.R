@@ -2,7 +2,6 @@
 ## Author: Kevin Jin
 
 ##### TO-DO: #####
-##
 ## 1. First, ensure that the data is clean. Check case by case to make sure
 ## that the images are properly loaded, with 0s for background and 1s for the
 ## shape, and invert as necessary. See 1 and 2.
@@ -10,13 +9,7 @@
 ## 2. In the SAFARI fork, set objects for 0 = background and 1 = foreground for
 ## each image.
 ##
-## 3. The true number of clusters can be extracted by substringing the first
-## five letters of each file name (70 clusters for 1400 images with 20 images
-## in each cluster).
-##
-## 4. Clean up code and increase readability and efficiency.
-##
-## 5. Extract ground truth for MPEG-7 and ETH-80, and redo all ARI plots.
+## 3. Clean up code and increase readability and efficiency.
 
 ##### PREPARATION #####
 

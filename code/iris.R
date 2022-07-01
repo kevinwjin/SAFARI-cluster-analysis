@@ -2,12 +2,7 @@
 ## Author: Kevin Jin
 
 ## To-do:
-## 1. Extract ground truth for Iris and redo all ARI plots.
-## 
-## 2. The true number of clusters can be extracted by substringing the first
-## five letters of each file name.
-##
-## 3. Clean up code and increase readability and efficiency.
+## 1. Clean up code and increase readability and efficiency.
 
 library(dplyr)
 library(ggplot2)
