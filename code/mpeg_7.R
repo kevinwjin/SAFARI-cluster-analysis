@@ -85,7 +85,7 @@ extract_features <- function(img) {
 }
 
 # Process all images in parallel
-cl <- makeCluster(8) # Allocate 8 cores; modify as appropriate for system
+cl <- makeCluster(detectCores()) # Allocate number of cores as detected
 clusterExport(cl, # Pass function dependencies to each core
   varlist = c(
     "read.image",
