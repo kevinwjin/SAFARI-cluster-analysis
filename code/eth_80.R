@@ -40,61 +40,61 @@ file_list <- dir(pattern = "png$") # Choose appropriate image extension
 
 # Extract ground truth
 truth <- NULL
-
 for (file in file_list) {
   truth <- c(truth, str_extract(file, "^[A-z]+")) # extract one part of file name
 }
-
-truth <- truth %>% as.factor() %>% as.numeric()
+truth <- truth %>%
+  as.factor() %>%
+  as.numeric()
 
 ##### PROCESS IMAGES AND EXTRACT FEATURES #####
 
 # Segment shape from image and extract 29 features
 extract_features <- function(img) {
+  this_img <- read.image(img)
   img_segs <- binary.segmentation(this_img,
-                                  id = c("NLST", "AA00474", "11030"), # Placeholder IDs
-                                  filter = 150, # Noise removal of anything smaller than 150 pixels;
-                                  # Be careful because largest shape may be smaller
-                                  # than 150 for some images;
-                                  # Always choose the largest filter per image
-                                  k = 3, # Enlarge shape by a factor of 3 to avoid 0 thickness and revisiting
-                                  # the same pixel when tracing boundary
-                                  categories = c(
-                                    "geometric", # Extract all features
-                                    "boundary",
-                                    "topological"
-                                  )
+    id = c("NLST", "AA00474", "11030"), # Placeholder IDs
+    filter = 150, # Noise removal of anything smaller than 150 pixels;
+    # Be careful because largest shape may be smaller
+    # than 150 for some images;
+    # Always choose the largest filter per image
+    k = 3, # Enlarge shape by a factor of 3 to avoid 0 thickness and revisiting
+    # the same pixel when tracing boundary
+    categories = c(
+      "geometric", # Extract all features
+      "boundary",
+      "topological"
+    )
   )
   features <- data.frame(img_segs
-                         [["desc"]]
-                         [-c(1, 1:4)]) # Delete irrelevant first 4 columns
+  [["desc"]]
+  [-c(1, 1:4)]) # Delete irrelevant first 4 columns
   features <- cbind(
     c(img), # Add first column with file name
     features
-  ) 
+  )
   return(features)
 }
 
 # Process all images in parallel
 cl <- makeCluster(detectCores()) # Allocate number of cores as detected
 clusterExport(cl, # Pass function dependencies to each core
-              varlist = c(
-                "read.image",
-                "binary.segmentation"
-              )
+  varlist = c(
+    "read.image",
+    "binary.segmentation"
+  )
 )
 features <- parSapply(cl, # Parallel sapply
-                      file_list,
-                      FUN = extract_features
+  file_list,
+  FUN = extract_features
 )
 stopCluster(cl) # De-allocate cores and expunge R sessions from memory
 
 # Clean up data frame
 features <- data.frame(t(features), # Transpose result
-                       row.names = 1 # Delete redundant first column
-) 
+  row.names = 1 # Delete redundant first column
+)
 features <- data.frame(lapply(features, unlist)) # Flatten column-lists
-
 features_scaled <- features %>% mutate_all(scale) # Standardize all variables
 
 ##### CLUSTER ANALYSIS #####
@@ -127,27 +127,27 @@ kmeans_unscaled_truth <- kmeans(features, 8) # Cluster unscaled features
 
 # Visualize k-means clusters (ggplot2 supports a maximum of 25 levels)
 fviz_cluster(kmeans_scaled_truth, # No labels
-             data = features_scaled,
-             geom = "point",
-             ellipse.type = "convex",
-             ggtheme = theme_bw(),
-             main = "k-means clustering of shape features from ETH-80 (k = 8)"
+  data = features_scaled,
+  geom = "point",
+  ellipse.type = "convex",
+  ggtheme = theme_bw(),
+  main = "k-means clustering of shape features from ETH-80 (k = 8)"
 )
 
 fviz_cluster(kmeans_cluster, # Labels included
-             data = features_scaled,
-             main = "k-means clustering of shape features from ETH-80 (k = 8)"
+  data = features_scaled,
+  main = "k-means clustering of shape features from ETH-80 (k = 8)"
 )
 
 # Hierarchical clustering
 hier_scaled <- hclust(dist(features_scaled, # Generate dissimilarity matrix
-                           method = "euclidean"
+  method = "euclidean"
 ),
 method = "ward.D2"
 ) # Complete linkage hierarchical clustering
 
 hier_unscaled <- hclust(dist(features,
-                             method = "euclidean"
+  method = "euclidean"
 ),
 method = "ward.D2"
 )
@@ -193,9 +193,9 @@ kmeans_mat <- matrix(nrow = max_k, ncol = length(file_list), byrow = TRUE)
 for (k in 1:max_k) {
   kmeans_mat[k, ] <- kmeans(
     x = features_scaled,
-    centers = k,
-    nstart = 20,
-    iter.max = 30
+    centers = k
+    # nstart = 20,
+    # iter.max = 30
   )[["cluster"]]
 }
 kmeans_scaled <- as.data.frame(kmeans_mat)
@@ -204,9 +204,9 @@ kmeans_scaled <- as.data.frame(kmeans_mat)
 for (k in 1:max_k) {
   kmeans_mat[k, ] <- kmeans(
     x = features,
-    centers = k,
-    nstart = 20,
-    iter.max = 30
+    centers = k
+    # nstart = 20,
+    # iter.max = 30
   )[["cluster"]] # Select cluster results
 }
 kmeans_unscaled <- as.data.frame(kmeans_mat)
@@ -235,41 +235,41 @@ kmeans_ari <- mutate(kmeans_ari, k_values = as.numeric(row.names(kmeans_ari)))
 ggplot(kmeans_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_point(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
-  geom_line(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
+  # geom_point(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
+  # geom_line(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
   geom_vline(
     xintercept = 8, # Ground truth
     color = "red"
   ) +
   labs(
-    title = "k-means clustering accuracy (ground truth: k = 8)",
+    title = "k-means Clustering Accuracy (Data: Normalized ETH-80 Shape Features)",
     x = "k-value",
-    y = "Adjusted Rand Index",
-    color = "Features"
+    y = "Adjusted Rand Index"
+    # color = "Features"
   ) +
-  scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1))
+  theme(legend.position = "none")
+# scale_color_hue(labels = c("Scaled", "Unscaled")) +
+# scale_x_continuous(breaks = seq(0, max_k, by = 10)) +
+# scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 # Generate hierarchical clusters
 hier_scaled_tree <- hclust(dist(features_scaled, method = "euclidean"),
-                           method = "complete" # Complete linkage
+  method = "complete" # Complete linkage
 )
-
 hier_unscaled_tree <- hclust(dist(features, method = "euclidean"),
-                             method = "complete"
+  method = "complete"
 )
 
 max_k <- 100
@@ -310,37 +310,38 @@ hier_ari <- mutate(hier_ari, k_values = as.numeric(row.names(hier_ari)))
 ggplot(hier_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_point(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
-  geom_line(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
+  # geom_point(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
+  # geom_line(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
   geom_vline(
     xintercept = 8, # Ground truth
     color = "red"
   ) +
   labs(
-    title = "Hierarchical clustering accuracy (ground truth: k = 8)",
+    title = "Hierachical Clustering Accuracy (Data: Normalized ETH-80 Shape Features)",
     x = "k-value",
     y = "Adjusted Rand Index",
-    color = "Features"
+    # color = "Features"
   ) +
-  scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1))
+  theme(legend.position = "none")
+# scale_color_hue(labels = c("Scaled", "Unscaled")) +
+# scale_x_continuous(breaks = seq(0, max_k, by = 10)) +
+# scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 # Generate Gaussian mixture model clusters
 max_k <- 100
-gmm_mat <- matrix(nrow = max_k, ncol = length(file_names), byrow = TRUE)
+gmm_mat <- matrix(nrow = max_k, ncol = length(file_list), byrow = TRUE)
 
 # Generate GMM clustering from scaled features
 for (k in 1:max_k) {
@@ -377,33 +378,34 @@ gmm_ari <- mutate(gmm_ari, k_values = as.numeric(row.names(gmm_ari)))
 ggplot(gmm_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_point(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
-  geom_line(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
+  # geom_point(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
+  # geom_line(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
   geom_vline(
     xintercept = 8, # Ground truth
     color = "red"
   ) +
   labs(
-    title = "GMM clustering accuracy (ground truth: k = 8)",
+    title = "GMM Clustering Accuracy (Data: Normalized ETH-80 Shape Features)",
     x = "k-value",
     y = "Adjusted Rand Index",
-    color = "Features"
+    # color = "Features"
   ) +
-  scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1))
+  theme(legend.position = "none")
+# scale_color_hue(labels = c("Scaled", "Unscaled")) +
+# scale_x_continuous(breaks = seq(0, max_k, by = 10)) +
+# scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 # Visualize accuracy of all clustering methods
 accuracy <- right_join(kmeans_ari, gmm_ari, by = "k_values")
@@ -420,46 +422,46 @@ names(accuracy) <- c(
 )
 
 ggplot(accuracy, aes(x = k_values)) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = kmeans_ari_scaled,
-    color = "darkred",
-    linetype = "solid"
+    color = "darkred"
+    # linetype = "solid"
   )) +
-  geom_line(aes(
-    y = kmeans_ari_unscaled,
-    color = "darkred",
-    linetype = "twodash"
-  )) +
-  geom_line(aes(
+  # geom_line(aes(
+  #   y = kmeans_ari_unscaled,
+  #   color = "darkred",
+  #   linetype = "twodash"
+  # )) +
+  geom_smooth(aes(
     y = hier_ari_scaled,
-    color = "steelblue",
-    linetype = "solid"
+    color = "steelblue"
+    # linetype = "solid"
   )) +
-  geom_line(aes(
-    y = hier_ari_unscaled,
-    color = "steelblue",
-    linetype = "twodash"
-  )) +
-  geom_line(aes(
+  # geom_line(aes(
+  #   y = hier_ari_unscaled,
+  #   color = "steelblue",
+  #   linetype = "twodash"
+  # )) +
+  geom_smooth(aes(
     y = gmm_ari_scaled,
-    color = "seagreen",
-    linetype = "solid"
+    color = "seagreen"
+    # linetype = "solid"
   )) +
-  geom_line(aes(
-    y = gmm_ari_unscaled,
-    color = "seagreen",
-    linetype = "twodash"
-  )) +
+  # geom_line(aes(
+  #   y = gmm_ari_unscaled,
+  #   color = "seagreen",
+  #   linetype = "twodash"
+  # )) +
   geom_vline(
     xintercept = 8,
     color = "red"
   ) +
   labs(
-    title = "Performance of Several Clustering Methods Performed on ETH-80",
-    x = "Number of clusters (k-value)",
+    title = "Accuracy of Several Clustering Methods (Data: Normalized ETH-80 Shape Features)",
+    x = "k-value",
     y = "Adjusted Rand Index"
   ) +
-  scale_x_continuous(breaks = seq(0, 100, by = 10)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
-  scale_color_hue(labels = c("k-means", "GMM", "Hierarchical")) +
-  scale_linetype(labels = c("Scaled", "Unscaled"))
+  # scale_x_continuous(breaks = seq(0, max_k, by = 10)) +
+  # scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
+  scale_color_hue(labels = c("k-means", "GMM", "Hierarchical"))
+# scale_linetype(labels = c("Scaled", "Unscaled"))

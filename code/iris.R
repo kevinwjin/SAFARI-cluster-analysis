@@ -13,24 +13,26 @@ data(iris)
 
 # Scale data
 unscaled <- iris %>% select(-Species) # Remove species column
-scaled <- unscaled %>% mutate_all(scale) 
+scaled <- unscaled %>% mutate_all(scale)
 
 ##### EXTRACT GROUND TRUTH #####
-truth <- as.numeric(iris$Species)  # Ground truth: 4 species
+truth <- as.numeric(iris$Species) # Ground truth: 4 species
 
 ##### K-MEANS #####
 max_k <- 20
-kmeans_mat <- matrix(nrow = max_k, 
-                     ncol = nrow(iris), 
-                     byrow = TRUE)
+kmeans_mat <- matrix(
+  nrow = max_k,
+  ncol = nrow(iris),
+  byrow = TRUE
+)
 
 # Generate k-means clustering from scaled features
 for (k in 1:max_k) {
   kmeans_mat[k, ] <- kmeans(
     x = scaled,
     centers = k,
-    iter.max = 30,
-    nstart = 20
+    #iter.max = 30,
+    #nstart = 20
   )[["cluster"]]
 }
 kmeans_scaled <- as.data.frame(kmeans_mat)
@@ -40,16 +42,18 @@ for (k in 1:max_k) {
   kmeans_mat[k, ] <- kmeans(
     x = unscaled,
     centers = k,
-    iter.max = 30,
-    nstart = 20
-  )[["cluster"]] 
+    #iter.max = 30,
+    #nstart = 20
+  )[["cluster"]]
 }
 kmeans_unscaled <- as.data.frame(kmeans_mat)
 
 # Calculate adjusted Rand index for k-means over 1:20
-kmeans_ari <- matrix(nrow = max_k, 
-                     ncol = 2, 
-                     byrow = TRUE)
+kmeans_ari <- matrix(
+  nrow = max_k,
+  ncol = 2,
+  byrow = TRUE
+)
 for (i in 1:max_k) {
   # ARI for k-means clustering of scaled features
   kmeans_ari[i, 1] <- adjustedRandIndex(
@@ -71,49 +75,52 @@ kmeans_ari <- mutate(kmeans_ari, k_values = as.numeric(row.names(kmeans_ari)))
 ggplot(kmeans_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_point(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
-  geom_line(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
+  # geom_point(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
+  # geom_line(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
   geom_vline(
     xintercept = 3,
     color = "red"
   ) +
   labs(
-    title = "k-means clustering accuracy (ground truth: k = 3)",
+    title = "k-means Clustering Accuracy (Data: Normalized Iris)",
     x = "k-value",
-    y = "Adjusted Rand Index",
-    color = "Features"
+    y = "Adjusted Rand Index"
+   # color = "Features"
   ) +
-  scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1))
+  theme(legend.position = "none")
+  #scale_color_hue(labels = c("Scaled", "Unscaled")) +
+  #scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
+  #scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 ##### HIERARCHICAL #####
 
 # Generate hierarchical clusters
 hier_scaled_tree <- hclust(dist(scaled, method = "euclidean"),
-                           method = "complete" # Complete linkage
+  method = "complete" # Complete linkage
 )
 
 hier_unscaled_tree <- hclust(dist(unscaled, method = "euclidean"),
-                             method = "complete"
+  method = "complete"
 )
 
 max_k <- 20
-hier_mat <- matrix(nrow = max_k, 
-                   ncol = nrow(iris), 
-                   byrow = TRUE)
+hier_mat <- matrix(
+  nrow = max_k,
+  ncol = nrow(iris),
+  byrow = TRUE
+)
 
 # Generate hierarchical clustering from scaled features
 for (k in 1:max_k) {
@@ -150,41 +157,44 @@ hier_ari <- mutate(hier_ari, k_values = as.numeric(row.names(hier_ari)))
 ggplot(hier_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
-  geom_point(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
-  geom_line(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
+  # geom_point(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
+  # geom_line(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
   geom_vline(
     xintercept = 3,
     color = "red"
   ) +
   labs(
-    title = "Hierarchical clustering accuracy (ground truth: k = 3)",
+    title = "Hierarchical Clustering Accuracy (Data: Normalized Iris)",
     x = "k-value",
-    y = "Adjusted Rand Index",
-    color = "Features"
+    y = "Adjusted Rand Index"
+    #color = "Features"
   ) +
-  scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1))
+  theme(legend.position = "none")
+  # scale_color_hue(labels = c("Scaled", "Unscaled")) +
+  # scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
+  # scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 ##### GAUSSIAN MIXTURE MODEL #####
 
 # Generate Gaussian mixture model clusters
 max_k <- 20
-gmm_mat <- matrix(nrow = max_k, 
-                  ncol = nrow(iris), 
-                  byrow = TRUE)
+gmm_mat <- matrix(
+  nrow = max_k,
+  ncol = nrow(iris),
+  byrow = TRUE
+)
 
 # Generate GMM clustering from scaled features
 for (k in 1:max_k) {
@@ -223,31 +233,32 @@ ggplot(gmm_ari, aes(x = k_values)) +
     y = ARI_scaled,
     color = "darkred"
   )) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = ARI_scaled,
     color = "darkred"
   )) +
-  geom_point(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
-  geom_line(aes(
-    y = ARI_unscaled,
-    color = "steelblue"
-  )) +
+  # geom_point(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
+  # geom_line(aes(
+  #   y = ARI_unscaled,
+  #   color = "steelblue"
+  # )) +
   geom_vline(
     xintercept = 3,
     color = "red"
   ) +
   labs(
-    title = "GMM clustering accuracy (ground truth: k = 3)",
+    title = "GMM Clustering Accuracy (Data: Normalized Iris)",
     x = "k-value",
     y = "Adjusted Rand Index",
-    color = "Features"
+   # color = "Features"
   ) +
-  scale_color_hue(labels = c("Scaled", "Unscaled")) +
-  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1))
+  theme(legend.position = "none")
+  # scale_color_hue(labels = c("Scaled", "Unscaled")) +
+  # scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
+  # scale_y_continuous(breaks = seq(0, 1, by = 0.1))
 
 ##### ALL METHODS #####
 
@@ -266,46 +277,46 @@ names(accuracy) <- c(
 )
 
 ggplot(accuracy, aes(x = k_values)) +
-  geom_line(aes(
+  geom_smooth(aes(
     y = kmeans_ari_scaled,
     color = "darkred",
-    linetype = "solid"
+    # linetype = "solid"
   )) +
-  geom_line(aes(
-    y = kmeans_ari_unscaled,
-    color = "darkred",
-    linetype = "twodash"
-  )) +
-  geom_line(aes(
+  # geom_line(aes(
+  #   y = kmeans_ari_unscaled,
+  #   color = "darkred",
+  #   linetype = "twodash"
+  # )) +
+  geom_smooth(aes(
     y = hier_ari_scaled,
     color = "steelblue",
-    linetype = "solid"
+    # linetype = "solid"
   )) +
-  geom_line(aes(
-    y = hier_ari_unscaled,
-    color = "steelblue",
-    linetype = "twodash"
-  )) +
-  geom_line(aes(
+  # geom_line(aes(
+  #   y = hier_ari_unscaled,
+  #   color = "steelblue",
+  #   linetype = "twodash"
+  # )) +
+  geom_smooth(aes(
     y = gmm_ari_scaled,
     color = "seagreen",
-    linetype = "solid"
+    # linetype = "solid"
   )) +
-  geom_line(aes(
-    y = gmm_ari_unscaled,
-    color = "seagreen",
-    linetype = "twodash"
-  )) +
+  # geom_line(aes(
+  #   y = gmm_ari_unscaled,
+  #   color = "seagreen",
+  #   linetype = "twodash"
+  # )) +
   geom_vline(
     xintercept = 3,
     color = "red"
   ) +
   labs(
-    title = "Performance of Several Clustering Methods (Ground truth: k = 3)",
-    x = "Number of clusters (k-value)",
+    title = "Performance of Several Clustering Methods (Data: Normalized Iris)",
+    x = "k-value",
     y = "Adjusted Rand Index"
   ) +
-  scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
-  scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
-  scale_color_hue(labels = c("k-means", "GMM", "Hierarchical")) +
-  scale_linetype(labels = c("Scaled", "Unscaled"))
+  # scale_x_continuous(breaks = seq(0, max_k, by = 2)) +
+  # scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
+  scale_color_hue(labels = c("k-means", "GMM", "Hierarchical")) 
+  # scale_linetype(labels = c("Scaled", "Unscaled"))
