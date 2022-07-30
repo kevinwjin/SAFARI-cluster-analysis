@@ -1,8 +1,8 @@
 # Load libraries
 library(ggplot2)
 
-# load map
-load("/Users/Qiwei_Li/Dropbox/data/shape/maps/maps.Rdata")
+# Load raw map (latitude-longtitude) data
+load("~/Repositories/SAFARI-cluster-analysis/data/maps/maps.Rdata")
 name <- "europe"
 map <- europe_map
 map <- subset(map, is.na(subregion))
@@ -51,9 +51,9 @@ lat_max <- max(map_adj$lat)
 lat_min <- min(map_adj$lat)
 ggplot(data = map_adj) + geom_polygon(mapping = aes(x = long, y = lat, group = group)) + coord_quickmap()
 
-# Plot each region
+# Create PNG of normalized shape of each region
 for (r in regions) {
-  png(filename = paste0("~/Dropbox/data/shape/maps/", name, "/", gsub(" ", "_", tolower(r)), ".png"), width = 1200, height = 1200)
+  png(filename = paste0("C:/Users/kevin/Documents/Repositories/SAFARI-cluster-analysis/data/maps/", name, "/", gsub(" ", "_", tolower(r)), ".png"), width = 1200, height = 1200)
   print(ggplot(data = subset(map, region == r)) + geom_polygon(mapping = aes(x = long, y = lat, group = group), fill = "black") + 
     coord_quickmap() +
     xlim(regions_ctr[r, "long"] + long_min, regions_ctr[r, "long"] + long_max) +
