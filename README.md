@@ -11,8 +11,13 @@ novel model-based clustering method.
 ## Datasets
 
 * `MPEG-7` - 70 classes (shapes) of 20 images each with minor differences in between.
-* `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 subclasses each, with 41 images in each subclass.
+* `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 
+subclasses each, with 41 images in each subclass.
 * `Iris` - Famous dataset from 1936. 150 observations with 4 variables.
+* `maps` - Binary images of outlines of the countries of the world, 
+the 48 contiguous US states, and all 254 counties in Texas. Includes filtered 
+datasets of 49 European countries (except Russia), and the 13 Texas counties
+comprising the DFW metroplex.
 
 ## Contents
 
@@ -21,6 +26,7 @@ novel model-based clustering method.
 * `code/mpeg_7.R` - Cluster analysis of MPEG-7 features
 * `code/eth_80.R` - Cluster analysis of ETH-80 features
 * `code/iris.R` - Cluster analysis of the Iris dataset
+* `code/maps.R` - Cluster analysis of the maps dataset
 * `code/image_thresholding.R` - Thresholds grayscale images to binary
 
 ## Dependencies
