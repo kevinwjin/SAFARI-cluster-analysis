@@ -432,6 +432,10 @@ ggplot(accuracy, aes(x = k_values)) +
     color = "darkred"
     # linetype = "solid"
   )) +
+  geom_point(aes(
+    y = kmeans_ari_scaled,
+    color = "darkred"
+  )) +
   # geom_line(aes(
   #   y = kmeans_ari_unscaled,
   #   color = "darkred",
@@ -442,6 +446,10 @@ ggplot(accuracy, aes(x = k_values)) +
     color = "steelblue"
     # linetype = "solid"
   )) +
+  geom_point(aes(
+    y = hier_ari_scaled,
+    color = "steelblue"
+  )) +
   # geom_line(aes(
   #   y = hier_ari_unscaled,
   #   color = "steelblue",
@@ -451,6 +459,10 @@ ggplot(accuracy, aes(x = k_values)) +
     y = gmm_ari_scaled,
     color = "seagreen"
     # linetype = "solid"
+  )) +
+  geom_point(aes(
+    y = gmm_ari_scaled,
+    color = "seagreen"
   )) +
   # geom_line(aes(
   #   y = gmm_ari_unscaled,

@@ -231,11 +231,11 @@ gmm_ari <- mutate(gmm_ari, k_values = as.numeric(row.names(gmm_ari)))
 ggplot(gmm_ari, aes(x = k_values)) +
   geom_point(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
   geom_smooth(aes(
     y = ARI_scaled,
-    color = "darkred"
+    color = 3
   )) +
   # geom_point(aes(
   #   y = ARI_unscaled,
@@ -282,6 +282,10 @@ ggplot(accuracy, aes(x = k_values)) +
     color = "darkred",
     # linetype = "solid"
   )) +
+  geom_point(aes(
+    y = kmeans_ari_scaled,
+    color = "darkred"
+  )) +
   # geom_line(aes(
   #   y = kmeans_ari_unscaled,
   #   color = "darkred",
@@ -292,6 +296,10 @@ ggplot(accuracy, aes(x = k_values)) +
     color = "steelblue",
     # linetype = "solid"
   )) +
+  geom_point(aes(
+    y = hier_ari_scaled,
+    color = "steelblue"
+  )) +
   # geom_line(aes(
   #   y = hier_ari_unscaled,
   #   color = "steelblue",
@@ -301,6 +309,10 @@ ggplot(accuracy, aes(x = k_values)) +
     y = gmm_ari_scaled,
     color = "seagreen",
     # linetype = "solid"
+  )) +
+  geom_point(aes(
+    y = gmm_ari_scaled,
+    color = "seagreen"
   )) +
   # geom_line(aes(
   #   y = gmm_ari_unscaled,
