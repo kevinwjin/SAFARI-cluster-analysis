@@ -14,10 +14,10 @@ novel model-based clustering method.
 * `ETH-80` - Binary version of the famous dataset. 8 classes (objects) with 10 
 subclasses each, with 41 images in each subclass.
 * `Iris` - Famous dataset from 1936. 150 observations with 4 variables.
-* `maps` - Binary images of outlines of the countries of the world, 
-the 48 contiguous US states, and all 254 counties in Texas. Includes filtered 
-datasets of 49 European countries (except Russia), and the 13 Texas counties
-comprising the DFW metroplex.
+* `maps` - Raw maps data of the countries of the world, the 48 contiguous 
+US states, and all 254 counties in Texas. Includes binary shape outlines to
+scale of 49 European countries (excluding Russia), the above mentioned US 
+states, and the 13 Texas counties comprising the DFW metroplex.
 
 ## Contents
 
